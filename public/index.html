@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Fresh Groceries</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  body { background: #436ca4; padding-bottom: 80px; } 
+  
+  /* Header */
+  header { background: #436ca4; padding: 16px; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+  .top-row { display: flex; justify-content: space-between; align-items: center; }
+  .location { font-size: 12px; color: #e0e0e0; display: flex; align-items: center; gap: 5px; }
+  .location b { font-size: 16px; color: #ffffff; }
+  .hamburger { color: white; font-size: 24px; cursor: pointer; padding: 0 10px; }
+  
+  /* Search Bar */
+  .search-bar { background: #f0f2f5; padding: 12px; border-radius: 12px; margin-top: 12px; display: flex; align-items: center; gap: 10px; color: #888; font-size: 14px; }
+  .search-bar input { border: none; background: transparent; width: 100%; outline: none; font-size: 14px; color: #000000; }
+  .search-bar input::placeholder { color: #666; }
+
+  /* Side Menu (Drawer) */
+  #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; display: none; }
+  #sideMenu { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: white; z-index: 100; transition: 0.3s ease-in-out; display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.2); }
+  #sideMenu.open { left: 0; }
+  .side-header { background: #436ca4; color: white; padding: 30px 20px 20px; }
+  .side-header h2 { font-size: 20px; margin-bottom: 4px; }
+  .side-header p { font-size: 13px; opacity: 0.8; }
+  .side-links { flex: 1; padding: 10px 0; overflow-y: auto; }
+  .side-links a { display: flex; align-items: center; gap: 12px; padding: 16px 20px; text-decoration: none; color: #333; font-size: 15px; font-weight: 500; border-bottom: 1px solid #f0f0f0; }
+  .side-links a:hover { background: #f9f9f9; }
+  .side-links a span { font-size: 20px; }
+
+  /* Promo Message */
+  .promo-strip { background: transparent; color: #ffffff; text-align: center; font-size: 12px; padding: 12px 16px 4px; font-weight: 500; letter-spacing: 0.3px; }
+  .promo-strip b { background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; margin-left: 4px; }
+  
+  /* Live Tracking Banner - Text Only */
+  #trackingBanner { display: none; background: transparent; padding: 8px 16px; text-align: center; }
+  #trackingBanner h3 { font-size: 14px; color: #e0e0e0; margin-bottom: 4px; font-weight: 500; }
+  #trackingBanner p { font-size: 13px; color: white; margin-bottom: 4px; }
+  #trackStatus { font-weight: bold; font-size: 16px; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+
+  /* Categories */
+  .categories-wrap { padding: 16px; background: #FAFAFA; margin: 8px 16px 16px; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .categories-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: #333; }
+  .categories { display: flex; gap: 16px; overflow-x: auto; scrollbar-width: none; }
+  .categories::-webkit-scrollbar { display: none; }
+  .cat-item { display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: #333; min-width: 65px; }
+  .cat-icon { width: 60px; height: 60px; background: #e6f7f4; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; overflow: hidden; }
+  .cat-icon img { width: 100%; height: 100%; object-fit: cover; }
+  .cat-name { font-size: 11px; font-weight: 600; text-align: center; }
+
+  /* All Products */
+  .products-wrap { padding: 0 16px; }
+  .section-title { font-size: 18px; font-weight: bold; margin-bottom: 12px; color: #ffffff; display: flex; align-items: center; gap: 8px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  
+  /* Product Card */
+  .card { background: white; border-radius: 16px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-decoration: none; color: inherit; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+  
+  /* Bestseller Badge */
+  .best-badge { position: absolute; top: 0; left: 0; background: #ff9800; color: white; font-size: 10px; font-weight: bold; padding: 4px 8px; border-bottom-right-radius: 8px; z-index: 2; }
+
+  .card-img { width: 100%; height: 100px; object-fit: contain; margin-bottom: 8px; margin-top: 10px; }
+  .card-emoji { font-size: 40px; text-align: center; margin-bottom: 10px; height: 100px; display: flex; align-items: center; justify-content: center; margin-top: 10px; }
+  .card h3 { font-size: 13px; font-weight: 600; margin-bottom: 4px; line-height: 1.2; }
+  .card .packSize { font-size: 11px; color: #888; margin-bottom: 8px; }
+  .priceRow { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+  .price { font-size: 14px; font-weight: bold; color: #111; }
+  .addBtn { background: #fff; color: #1ABC9C; border: 1px solid #1ABC9C; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+  
+  /* Cart Bar */
+  #cart { position: fixed; bottom: 0; left: 0; right: 0; background: #1ABC9C; color: white; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; border-radius: 16px 16px 0 0; z-index: 20; box-shadow: 0 -4px 12px rgba(0,0,0,0.15); }
+  #cart.hidden { display: none; }
+  #cart a { color: white; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+</style>
+</head>
+<body>
+
+<div id="overlay" onclick="toggleMenu()"></div>
+<div id="sideMenu">
+  <div class="side-header">
+    <h2 id="menuName">Hello, Guest!</h2>
+    <p id="menuPhone">Please complete an order</p>
+  </div>
+  <div class="side-links">
+    <a href="/orders.html"><span>📦</span> My Orders</a>
+    <a href="/profile.html"><span>👤</span> My Profile</a>
+    <a href="/help.html"><span>🎧</span> Help & Support</a>
+    <a href="/"><span>🏠</span> Home</a>
+  </div>
+</div>
+
+<header>
+  <div class="top-row">
+    <div class="location">
+      <span>⚡</span> Delivery in 15 mins to <b>Bangalore</b>
+    </div>
+    <div class="hamburger" onclick="toggleMenu()">☰</div>
+  </div>
+  <div class="search-bar">
+    🔍 <input type="text" id="searchInput" placeholder="Search for milk, bread, chips...">
+  </div>
+</header>
+
+<div id="trackingBanner">
+  <h3>Active Order Tracking</h3>
+  <p>Order <b id="trackId"></b> • Estimated Time: <b id="etaText">...</b></p>
+  <div id="trackStatus">...</div>
+</div>
+
+<div class="promo-strip" id="promoBanner">
+  Fresh Groceries in 15 Mins! Use code <b>WELCOME50</b> for 50% OFF
+</div>
+
+<div class="categories-wrap" id="categoriesWrap">
+  <div class="categories-title">Shop by Category</div>
+  <div class="categories" id="categoryList"></div>
+</div>
+
+<div class="products-wrap" id="productsWrap">
+  <div class="section-title" id="mainSectionTitle">All Products</div>
+  <div class="grid" id="productGrid"><p style="color: white;">Loading products...</p></div>
+</div>
+
+<div id="cart" class="hidden">
+  <span id="cartInfo">0 items • ₹0</span>
+  <a href="/cart.html">View Cart →</a>
+</div>
+
+<script>
+  const API = '/api';
+  const categoryIcons = { 'Fruits': '🍎', 'Vegetables': '🥦', 'Drinks': '🥤', 'Snacks': '🍿', 'Cosmetics': '💄', 'Chocolate': '🍫', 'Pooja essentials': '🪔', 'Flowers': '💐', 'Food': '🍲', 'Dairy': '🥛', 'Bakery': '🍞', 'Staples': '🌾' };
+
+  function getCart() { return JSON.parse(localStorage.getItem('cart') || '{}'); }
+  function saveCart(cart) { localStorage.setItem('cart', JSON.stringify(cart)); }
+
+  function toggleMenu() {
+    const menu = document.getElementById('sideMenu');
+    const overlay = document.getElementById('overlay');
+    if (menu.classList.contains('open')) {
+      menu.classList.remove('open');
+      overlay.style.display = 'none';
+    } else {
+      menu.classList.add('open');
+      overlay.style.display = 'block';
+    }
+  }
+
+  const savedDetails = JSON.parse(localStorage.getItem('customerDetails') || 'null');
+  if (savedDetails && savedDetails.name) {
+    document.getElementById('menuName').textContent = `Hello, ${savedDetails.name}!`;
+    document.getElementById('menuPhone').textContent = savedDetails.phone;
+  }
+
+  async function loadCategories() {
+    try {
+      const res = await fetch(`${API}/categories`);
+      const data = await res.json();
+      const list = document.getElementById('categoryList');
+      const defaultCats = ['Fruits', 'Vegetables', 'Drinks', 'Snacks', 'Chocolate', 'Flowers', 'Food'];
+      const catsToShow = data.categories.length > 0 ? data.categories : defaultCats.map(name => ({name, icon: categoryIcons[name]||'📦'}));
+
+      list.innerHTML = catsToShow.map(c => `
+        <a href="/category.html?cat=${encodeURIComponent(c.name)}" class="cat-item">
+          <div class="cat-icon">${c.icon.startsWith('http') ? `<img src="${c.icon}">` : c.icon}</div>
+          <div class="cat-name">${c.name}</div>
+        </a>
+      `).join('');
+    } catch (err) { console.error(err); }
+  }
+
+  async function loadProducts(searchTerm = '') {
+    try {
+      const url = searchTerm ? `${API}/products?search=${encodeURIComponent(searchTerm)}` : `${API}/products`;
+      const res = await fetch(url);
+      const data = await res.json();
+      let allProducts = data.products || [];
+      
+      // SORT: Bestsellers (ordered 3+ times) go to the top automatically
+      allProducts.sort((a, b) => (b.orderCount || 0) - (a.orderCount || 0));
+      
+      if (searchTerm) {
+        document.getElementById('promoBanner').style.display = 'none';
+        document.getElementById('categoriesWrap').style.display = 'none';
+        document.getElementById('mainSectionTitle').textContent = `Search Results for "${searchTerm}"`;
+      } else {
+        document.getElementById('promoBanner').style.display = 'block';
+        document.getElementById('categoriesWrap').style.display = 'block';
+        document.getElementById('mainSectionTitle').textContent = 'All Products';
+      }
+
+      const grid = document.getElementById('productGrid');
+      if (allProducts.length === 0) { 
+        grid.innerHTML = '<p style="padding: 20px; color: white;">No products found.</p>'; 
+        return; 
+      }
+      
+      grid.innerHTML = allProducts.map(p => {
+        // Check if it qualifies as a bestseller
+        const isBest = p.orderCount >= 3;
+        
+        return `
+        <a href="/product.html?id=${p._id}" class="card">
+          ${isBest ? '<div class="best-badge">🔥 Bestseller</div>' : ''}
+          ${p.imageUrl ? `<img src="${p.imageUrl}" class="card-img" alt="${p.name}">` : `<div class="card-emoji">${categoryIcons[p.category] || '📦'}</div>`}
+          <h3>${p.name}</h3>
+          <div class="packSize">${p.packSize}</div>
+          <div class="priceRow">
+            <span class="price">₹${p.price}</span>
+            <button class="addBtn" onclick="event.preventDefault(); addToCart('${p._id}', '${p.name}', ${p.price}, ${p.stock})" ${p.stock === 0 ? 'disabled' : ''}>${p.stock === 0 ? 'OUT' : 'ADD'}</button>
+          </div>
+        </a>
+      `}).join('');
+    } catch (err) { console.error(err); }
+  }
+
+  function addToCart(id, name, price, stock) {
+    const cart = getCart();
+    if (!cart[id]) cart[id] = { name, price, quantity: 0 };
+    if (cart[id].quantity >= stock) return alert(`Only ${stock} in stock`);
+    cart[id].quantity += 1;
+    saveCart(cart);
+    updateCartBadge();
+  }
+
+  function updateCartBadge() {
+    const cart = getCart();
+    const items = Object.values(cart).filter(i => i.quantity > 0);
+    const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
+    const count = items.reduce((s, i) => s + i.quantity, 0);
+    const cartEl = document.getElementById('cart');
+    if (count === 0) cartEl.classList.add('hidden');
+    else { cartEl.classList.remove('hidden'); document.getElementById('cartInfo').textContent = `${count} items • ₹${total}`; }
+  }
+
+  async function checkActiveOrder() {
+    const lastOrder = JSON.parse(localStorage.getItem('lastOrder') || 'null');
+    if (!lastOrder) return; 
+
+    try {
+      const res = await fetch(`${API}/orders/${lastOrder._id}`);
+      const data = await res.json();
+      
+      if (data.success) {
+        const order = data.order;
+        
+        if (order.status === 'Delivered') {
+          document.getElementById('trackingBanner').style.display = 'block';
+          document.getElementById('trackId').textContent = '#' + order._id.slice(-6).toUpperCase();
+          document.getElementById('etaText').style.display = 'none';
+          document.getElementById('trackStatus').textContent = 'Delivered';
+          document.getElementById('trackStatus').style.color = '#1ABC9C';
+          setTimeout(() => {
+            document.getElementById('trackingBanner').style.display = 'none';
+            localStorage.removeItem('lastOrder');
+          }, 5000);
+          return;
+        } 
+        
+        if (order.status === 'Cancelled') {
+          document.getElementById('trackingBanner').style.display = 'none';
+          localStorage.removeItem('lastOrder'); 
+          return;
+        }
+
+        document.getElementById('trackingBanner').style.display = 'block';
+        document.getElementById('trackId').textContent = '#' + order._id.slice(-6).toUpperCase();
+        document.getElementById('etaText').style.display = 'inline';
+        
+        if (order.status === 'Placed') {
+          document.getElementById('etaText').textContent = '30-45 mins';
+          document.getElementById('trackStatus').textContent = 'Order Placed';
+          document.getElementById('trackStatus').style.color = '#FFD54F'; 
+        } else if (order.status === 'Confirmed') {
+          document.getElementById('etaText').textContent = '20-30 mins';
+          document.getElementById('trackStatus').textContent = 'Confirmed & Packing';
+          document.getElementById('trackStatus').style.color = '#90CAF9'; 
+        } else if (order.status === 'Out for Delivery') {
+          document.getElementById('etaText').textContent = '10-15 mins';
+          document.getElementById('trackStatus').textContent = 'Out for Delivery';
+          document.getElementById('trackStatus').style.color = '#1ABC9C'; 
+        }
+      }
+    } catch (err) { console.error('Tracking error', err); }
+  }
+
+  let searchTimeout;
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    const searchTerm = e.target.value.trim();
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => { loadProducts(searchTerm); }, 300);
+  });
+
+  updateCartBadge(); loadCategories(); loadProducts(); checkActiveOrder();
+  setInterval(checkActiveOrder, 15000); 
+</script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Profile</title>
+<style>
+  body { font-family: sans-serif; background: #436ca4; padding: 16px; color: white; }
+  .back-btn { background: #1ABC9C; color: white; padding: 6px 14px; border-radius: 8px; font-size: 14px; font-weight: bold; text-decoration: none; display: inline-block; margin-bottom: 20px; }
+  .card { background: white; color: #333; padding: 24px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  h2 { margin-bottom: 20px; color: #111; }
+  .field { margin-bottom: 16px; }
+  .label { font-size: 12px; font-weight: bold; color: #888; text-transform: uppercase; margin-bottom: 4px; }
+  .value { font-size: 16px; font-weight: 500; }
+  .empty { text-align: center; color: #666; padding: 20px 0; }
+</style>
+</head>
+<body>
+  <a href="/" class="back-btn">← Back to Shop</a>
+  <div class="card">
+    <h2>👤 My Profile</h2>
+    <div id="profileData"></div>
+  </div>
+<script>
+  const details = JSON.parse(localStorage.getItem('customerDetails') || 'null');
+  const container = document.getElementById('profileData');
+
+  if (details && details.name) {
+    container.innerHTML = `
+      <div class="field"><div class="label">Name</div><div class="value">${details.name}</div></div>
+      <div class="field"><div class="label">Phone Number</div><div class="value">${details.phone}</div></div>
+      <div class="field"><div class="label">Delivery Address</div><div class="value">${details.address}</div></div>
+    `;
+  } else {
+    container.innerHTML = `<p class="empty">No profile found. Please place an order to save your details.</p>`;
+  }
+</script>
+</body>
+</html>

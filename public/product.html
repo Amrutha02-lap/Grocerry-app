@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Product Details</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+  body { background: #fcf5f7; padding-bottom: 100px; } /* PASTEL MAROON */
+  
+  header { padding: 16px; display: flex; align-items: center; background: #fff; }
+  .back-btn { background: #0c831f; color: white; padding: 6px 14px; border-radius: 8px; font-size: 14px; font-weight: bold; text-decoration: none; display: inline-block; }
+  
+  .image-box { width: 100%; height: 300px; display: flex; justify-content: center; align-items: center; background: #fff; }
+  .image-box img { width: 80%; height: 80%; object-fit: contain; }
+  .image-box .emoji { font-size: 100px; }
+  
+  .details { padding: 24px; background: #fff; margin-top: 10px; border-radius: 16px 16px 0 0; }
+  .category-tag { color: #0c831f; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; }
+  h1 { font-size: 24px; margin-bottom: 8px; color: #111; }
+  .brand { color: #888; font-size: 14px; margin-bottom: 16px; }
+  .pack { font-size: 14px; margin-bottom: 24px; }
+  .price { font-size: 28px; font-weight: bold; margin-bottom: 24px; }
+  
+  .action-bar { position: fixed; bottom: 0; left: 0; right: 0; padding: 16px; background: #fff; border-top: 1px solid #eee; display: flex; gap: 16px; }
+  .qty-control { display: flex; align-items: center; border: 1px solid #0c831f; border-radius: 8px; overflow: hidden; background: #fff; }
+  .qty-control button { padding: 12px 20px; background: #fff; color: #0c831f; border: none; font-size: 18px; font-weight: bold; cursor: pointer; }
+  .qty-control span { padding: 0 10px; font-weight: bold; color: #0c831f; }
+  .add-btn { flex: 1; background: #0c831f; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="javascript:history.back()" class="back-btn">← Back</a>
+</header>
+
+<div id="pageContent"><p style="padding: 20px;">Loading...</p></div>
+
+<script>
+  const API = '/api';
+  const categoryIcons = { 'Fruits': '🍎', 'Vegetables': '🥦', 'Drinks': '🥤', 'Snacks': '🍿', 'Cosmetics': '💄', 'Chocolate': '🍫', 'Pooja essentials': '🪔', 'Flowers': '💐', 'Food': '🍲', 'Dairy': '🥛', 'Bakery': '🍞', 'Staples': '🌾' };
+  
+  const urlParams = new URLSearchParams(window.location.search);
+  const productId = urlParams.get('id');
+
+  function getCart() { return JSON.parse(localStorage.getItem('cart') || '{}'); }
+  function saveCart(cart) { localStorage.setItem('cart', JSON.stringify(cart)); }
+
+  async function loadProduct() {
+    try {
+      const res = await fetch(`${API}/products/${productId}`);
+      const data = await res.json();
+      
+      if (!data.success) { document.getElementById('pageContent').innerHTML = '<p style="padding:20px;">Product not found.</p>'; return; }
+      
+      const p = data.product;
+      const cart = getCart();
+      const currentQty = cart[p._id] ? cart[p._id].quantity : 0;
+
+      document.getElementById('pageContent').innerHTML = `
+        <div class="image-box">
+          ${p.imageUrl 
+            ? `<img src="${p.imageUrl}" alt="${p.name}">` 
+            : `<div class="emoji">${categoryIcons[p.category] || '📦'}</div>`}
+        </div>
+        <div class="details">
+          <div class="category-tag">${p.category}</div>
+          <h1>${p.name}</h1>
+          <div class="brand">${p.brand || 'Fresh Groceries'}</div>
+          <div class="pack">${p.packSize}</div>
+          <div class="price">₹${p.price}</div>
+          <p style="color:${p.stock > 0 ? '#0c831f' : 'red'}; font-size: 14px; font-weight: bold;">
+            ${p.stock > 0 ? '✅ In Stock' : '❌ Out of Stock'}
+          </p>
+        </div>
+        
+        <div class="action-bar">
+          ${currentQty > 0 ? `
+            <div class="qty-control">
+              <button onclick="changeQty('${p._id}', '${p.name}', ${p.price}, ${p.stock}, -1)">−</button>
+              <span>${currentQty}</span>
+              <button onclick="changeQty('${p._id}', '${p.name}', ${p.price}, ${p.stock}, 1)">+</button>
+            </div>
+            <button class="add-btn" onclick="window.location.href='/cart.html'">Go to Cart</button>
+          ` : `
+            <button class="add-btn" onclick="changeQty('${p._id}', '${p.name}', ${p.price}, ${p.stock}, 1)" ${p.stock === 0 ? 'disabled' : ''}>
+              ${p.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+            </button>
+          `}
+        </div>
+      `;
+    } catch (err) { console.error(err); }
+  }
+
+  function changeQty(id, name, price, stock, change) {
+    const cart = getCart();
+    if (!cart[id]) cart[id] = { name, price, quantity: 0 };
+    cart[id].quantity += change;
+    if (cart[id].quantity > stock) return alert('Not enough stock');
+    if (cart[id].quantity <= 0) delete cart[id];
+    saveCart(cart);
+    loadProduct();
+  }
+
+  loadProduct();
+</script>
+</body>
+</html>

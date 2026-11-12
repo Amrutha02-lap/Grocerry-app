@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Orders</title>
+<style>
+  body { font-family: sans-serif; background: #436ca4; padding: 16px; color: white; }
+  .back-btn { background: #1ABC9C; color: white; padding: 6px 14px; border-radius: 8px; font-size: 14px; font-weight: bold; text-decoration: none; display: inline-block; margin-bottom: 20px; }
+  .order-card { background: white; color: #333; padding: 16px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .order-top { display: flex; justify-content: space-between; font-size: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 8px; }
+  .status { font-weight: bold; color: #1ABC9C; }
+  .items { font-size: 14px; margin-bottom: 8px; }
+  .total { font-weight: bold; font-size: 16px; text-align: right; }
+  .empty { text-align: center; margin-top: 40px; font-size: 16px; }
+</style>
+</head>
+<body>
+  <a href="/" class="back-btn">← Back to Shop</a>
+  <h2 style="margin-bottom: 16px;">📦 My Orders</h2>
+  <div id="ordersList"><p>Loading...</p></div>
+
+<script>
+  const details = JSON.parse(localStorage.getItem('customerDetails') || 'null');
+  const container = document.getElementById('ordersList');
+
+  if (!details || !details.phone) {
+    container.innerHTML = `<p class="empty">No orders found. Please place an order first.</p>`;
+  } else {
+    fetch(`/api/orders/customer/${details.phone}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.orders.length > 0) {
+          container.innerHTML = data.orders.map(o => `
+            <div class="order-card">
+              <div class="order-top">
+                <span>#${o._id.slice(-6).toUpperCase()} • ${new Date(o.createdAt).toLocaleDateString('en-IN')}</span>
+                <span class="status">${o.status}</span>
+              </div>
+              <div class="items">${o.items.map(i => `${i.name} x${i.quantity}`).join(', ')}</div>
+              <div class="total">Total: ₹${o.totalAmount}</div>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = `<p class="empty">You have no previous orders.</p>`;
+        }
+      })
+      .catch(() => container.innerHTML = `<p class="empty">Error loading orders.</p>`);
+  }
+</script>
+</body>
+</html>

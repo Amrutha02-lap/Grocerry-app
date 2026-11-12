@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout</title>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+  body { font-family: sans-serif; background: #fcf5f7; padding: 16px; }
+  
+  /* Back button styling */
+  .top-nav { margin-bottom: 16px; }
+  .back-btn { background: #0c831f; color: white; padding: 6px 14px; border-radius: 8px; font-size: 14px; font-weight: bold; text-decoration: none; display: inline-block; }
+  
+  input, select { width: 100%; padding: 12px; margin: 6px 0 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; box-sizing: border-box; }
+  label { font-weight: bold; font-size: 14px; }
+  
+  .submit-btn { width: 100%; padding: 14px; background: #0c831f; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 12px; }
+  .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
+  
+  .home-btn { display: block; text-align: center; text-decoration: none; color: #0c831f; font-weight: bold; margin-top: 10px; padding: 10px; }
+</style>
+</head>
+<body>
+  
+  <div class="top-nav">
+    <a href="javascript:history.back()" class="back-btn">← Back</a>
+  </div>
+
+  <h2>Checkout</h2>
+  <form id="checkoutForm">
+    <label>Name</label><input id="name" required>
+    <label>Phone</label><input id="phone" type="tel" required>
+    <label>Delivery Address</label><input id="address" required>
+    <label>Delivery Note (optional)</label><input id="note" placeholder="e.g. Meet at main road">
+    
+    <label>Payment Method</label>
+    <select id="payment">
+      <option value="COD">Cash on Delivery</option>
+      <option value="UPI">UPI (Razorpay)</option>
+    </select>
+    
+    <button type="submit" id="submitBtn" class="submit-btn">Place Order</button>
+  </form>
+  
+  <a href="/" class="home-btn">← Back to Home</a>
+
+<script>
+  function getCart() { return JSON.parse(localStorage.getItem('cart') || '{}'); }
+
+  const savedDetails = JSON.parse(localStorage.getItem('customerDetails') || 'null');
+  if (savedDetails) {
+    document.getElementById('name').value = savedDetails.name || '';
+    document.getElementById('phone').value = savedDetails.phone || '';
+    document.getElementById('address').value = savedDetails.address || '';
+  }
+
+  document.getElementById('checkoutForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+
+    const cart = getCart();
+    const items = Object.entries(cart).filter(([_, v]) => v.quantity > 0)
+      .map(([id, v]) => ({ product: id, quantity: v.quantity }));
+      
+    if (items.length === 0) {
+      alert('Cart is empty');
+      btn.disabled = false;
+      btn.textContent = 'Place Order';
+      return;
+    }
+
+    const paymentMethod = document.getElementById('payment').value;
+    let totalAmount = Object.values(cart).reduce((s, i) => s + i.price * i.quantity, 0);
+
+    if (paymentMethod === 'COD') {
+      await saveOrderToDatabase('COD');
+    } else if (paymentMethod === 'UPI') {
+      try {
+        const res = await fetch('/api/payment/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: totalAmount * 100 }) 
+        });
+        const data = await res.json();
+        
+        if (!data.success) throw new Error(data.error);
+
+        const options = {
+          key: "YOUR_RAZORPAY_KEY_ID", // Will be updated later
+          amount: data.order.amount,
+          currency: "INR",
+          name: "Fresh Groceries",
+          order_id: data.order.id,
+          handler: async function (response) {
+            alert("Payment Successful!");
+            await saveOrderToDatabase('UPI'); 
+          },
+          theme: { color: "#0c831f" }
+        };
+        
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', function (response){
+          alert("Payment Failed: " + response.error.description);
+          btn.disabled = false;
+          btn.textContent = 'Place Order';
+        });
+        rzp.open();
+
+      } catch (err) {
+        alert('❌ ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Place Order';
+      }
+    }
+  };
+
+  async function saveOrderToDatabase(paymentType) {
+    const cart = getCart();
+    const items = Object.entries(cart).filter(([_, v]) => v.quantity > 0)
+      .map(([id, v]) => ({ product: id, quantity: v.quantity }));
+
+    const body = {
+      customer: {
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value,
+        address: document.getElementById('address').value
+      },
+      items,
+      paymentMethod: paymentType,
+      deliveryNote: document.getElementById('note').value
+    };
+
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        localStorage.setItem('customerDetails', JSON.stringify(body.customer));
+        localStorage.setItem('lastOrder', JSON.stringify(data.order));
+        localStorage.removeItem('cart');
+        window.location.href = '/confirmation.html';
+      } else {
+        alert('Error: ' + data.error);
+        localStorage.removeItem('cart'); // Clear cart on error to prevent loops
+        window.location.href = '/'; 
+      }
+    } catch (err) {
+      alert('Failed to connect to server.');
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = false;
+      btn.textContent = 'Place Order';
+    }
+  }
+</script>
+</body>
+</html>

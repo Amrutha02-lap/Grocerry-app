@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Cart</title>
+<style>
+  body { font-family: sans-serif; background: #f4fbf7; padding: 16px; } /* PASTEL BACKGROUND */
+  .item { background: white; padding: 12px; margin-bottom: 8px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
+  .controls button { padding: 4px 10px; margin: 0 4px; border: none; border-radius: 6px; background: #0c831f; color: white; font-weight: bold; cursor: pointer; }
+  .controls .remove { background: #c62828; }
+  #checkoutBtn { display: block; width: 100%; padding: 14px; background: #0c831f; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; margin-top: 20px; cursor: pointer; }
+  .home-btn { display: block; text-align: center; text-decoration: none; color: #0c831f; font-weight: bold; margin-top: 16px; }
+  h2 { margin-bottom: 16px; }
+</style>
+</head>
+<body>
+  <h2>🛒 Your Cart</h2>
+  <div id="cartList"></div>
+  
+  <button id="checkoutBtn" onclick="location.href='/checkout.html'">Proceed to Checkout</button>
+  <!-- NEW BACK TO HOME LINK -->
+  <a href="/" class="home-btn">← Back to Home</a>
+
+<script>
+  function getCart() { return JSON.parse(localStorage.getItem('cart') || '{}'); }
+  function saveCart(c) { localStorage.setItem('cart', JSON.stringify(c)); }
+
+  function render() {
+    const cart = getCart();
+    const list = document.getElementById('cartList');
+    const entries = Object.entries(cart).filter(([_, v]) => v.quantity > 0);
+    
+    if (entries.length === 0) {
+      list.innerHTML = '<p>Your cart is empty.</p>';
+      document.getElementById('checkoutBtn').style.display = 'none';
+      return;
+    }
+    
+    let total = 0;
+    list.innerHTML = entries.map(([id, item]) => {
+      total += item.price * item.quantity;
+      return `<div class="item">
+        <div><strong>${item.name}</strong><br>₹${item.price} each</div>
+        <div class="controls">
+          <button onclick="change('${id}', -1)">−</button>
+          <span>${item.quantity}</span>
+          <button onclick="change('${id}', 1)">+</button>
+          <button class="remove" onclick="removeItem('${id}')">Remove</button>
+        </div>
+      </div>`;
+    }).join('') + `<h3 style="margin-top:16px;">Total: ₹${total}</h3>`;
+  }
+
+  function change(id, delta) {
+    const cart = getCart();
+    cart[id].quantity += delta;
+    if (cart[id].quantity <= 0) delete cart[id];
+    saveCart(cart);
+    render();
+  }
+  function removeItem(id) {
+    const cart = getCart();
+    delete cart[id];
+    saveCart(cart);
+    render();
+  }
+  render();
+</script>
+</body>
+</html>

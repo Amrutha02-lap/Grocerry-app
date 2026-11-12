@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Fresh Groceries</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, sans-serif; background: #f0f2f5; }
+
+  #loginScreen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #2e7d32, #1b5e20); }
+  .loginBox { background: white; padding: 32px; border-radius: 16px; width: 340px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+  .loginBox h1 { font-size: 22px; margin-bottom: 6px; }
+  .loginBox p { font-size: 13px; color: #666; margin-bottom: 20px; }
+  .loginBox input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 12px; font-size: 15px; }
+  .loginBox button { width: 100%; padding: 12px; background: #2e7d32; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
+
+  #app { display: none; min-height: 100vh; }
+  #app.visible { display: flex; }
+  aside { width: 220px; background: #1b5e20; color: white; padding: 20px 0; min-height: 100vh; flex-shrink: 0; }
+  aside h2 { font-size: 16px; padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 12px; }
+  aside nav button { display: block; width: 100%; text-align: left; padding: 12px 20px; background: transparent; color: white; border: none; font-size: 14px; cursor: pointer; border-left: 3px solid transparent; }
+  aside nav button:hover { background: rgba(255,255,255,0.08); }
+  aside nav button.active { background: rgba(255,255,255,0.15); border-left-color: #66bb6a; }
+
+  main { flex: 1; padding: 24px; overflow-y: auto; max-height: 100vh; }
+  main h1 { font-size: 22px; margin-bottom: 4px; }
+  main .subtitle { color: #666; font-size: 13px; margin-bottom: 20px; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .stat { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .stat .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat .value { font-size: 28px; font-weight: bold; color: #2e7d32; margin-top: 6px; }
+
+  .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .cardHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .btnPrimary { background: #2e7d32; color: white; padding: 10px 18px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; }
+  .btnPrimary:hover { background: #1b5e20; }
+  .btnSmall { padding: 5px 10px; font-size: 12px; border: none; border-radius: 6px; cursor: pointer; }
+  .btnEdit { background: #1565c0; color: white; margin-right: 4px; }
+  .btnDel { background: #c62828; color: white; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+  th { color: #666; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+  tr:hover { background: #f9f9f9; }
+  .prod-img { width: 40px; height: 40px; object-fit: contain; border-radius: 4px; background: #f5f5f5; }
+
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
+  .modal.visible { display: flex; }
+  .modalBox { background: white; padding: 24px; border-radius: 12px; width: 100%; max-width: 420px; max-height: 90vh; overflow-y: auto; }
+  .modalBox h3 { font-size: 18px; margin-bottom: 16px; }
+  .modalBox label { display: block; font-size: 12px; font-weight: bold; color: #555; margin: 10px 0 4px; }
+  .modalBox input, .modalBox select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+  .modalBox .actions { display: flex; gap: 8px; margin-top: 16px; }
+  .modalBox .actions button { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+  .modalBox .actions .save { background: #2e7d32; color: white; }
+  .modalBox .actions .cancel { background: #eee; color: #333; }
+
+  .orderCard { border: 1px solid #eee; border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+  .orderCard .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .orderCard .items { font-size: 12px; color: #666; margin: 8px 0; }
+  .orderCard .actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .orderCard select, .orderCard input { padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="loginBox">
+    <h1>🔐 Admin Login</h1>
+    <p>Fresh Groceries — Management Panel</p>
+    <input id="passwordInput" type="password" placeholder="Enter admin password" />
+    <button onclick="login()">Login</button>
+  </div>
+</div>
+
+<div id="app">
+  <aside>
+    <h2>🥬 Admin Panel</h2>
+    <nav>
+      <button data-section="dashboard" class="active">📊 Dashboard</button>
+      <button data-section="products">📦 Products</button>
+      <button data-section="categories">🗂 Categories</button>
+      <button data-section="orders">🚚 Orders</button>
+      <button onclick="logout()" style="margin-top: 20px; color: #ffcdd2;">🚪 Logout</button>
+    </nav>
+  </aside>
+  <main id="mainContent"></main>
+</div>
+
+<div class="modal" id="productModal">
+  <div class="modalBox">
+    <h3 id="productModalTitle">Add Product</h3>
+    <input type="hidden" id="prod_id" />
+    <label>Name</label><input id="prod_name" />
+    <label>Brand</label><input id="prod_brand" />
+    <label>Category</label><select id="prod_category"></select>
+    <label>Pack Size</label><input id="prod_packSize" placeholder="e.g. 500ml" />
+    <label>Price (₹)</label><input id="prod_price" type="number" />
+    <label>Stock</label><input id="prod_stock" type="number" />
+    <label>Image URL (optional)</label><input id="prod_imageUrl" placeholder="https://example.com/image.jpg" />
+    <div class="actions">
+      <button class="cancel" onclick="closeModal('productModal')">Cancel</button>
+      <button class="save" onclick="saveProduct()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="categoryModal">
+  <div class="modalBox">
+    <h3 id="categoryModalTitle">Add Category</h3>
+    <input type="hidden" id="cat_id" />
+    <label>Name</label><input id="cat_name" />
+    <label>Icon (emoji or Image URL)</label><input id="cat_icon" placeholder="📦 or https://..." />
+    <div class="actions">
+      <button class="cancel" onclick="closeModal('categoryModal')">Cancel</button>
+      <button class="save" onclick="saveCategory()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = '/api';
+  let token = localStorage.getItem('adminToken');
+  let state = { categories: [], products: [], orders: [] };
+
+  async function login() {
+    const password = document.getElementById('passwordInput').value;
+    if (!password) return alert('Please enter a password');
+    try {
+      const res = await fetch(`${API}/admin/login`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      const data = await res.json();
+      if (data.success) {
+        token = data.token;
+        localStorage.setItem('adminToken', token);
+        showApp();
+      } else {
+        alert('❌ ' + data.error);
+      }
+    } catch (err) {
+      alert('❌ Could not connect to server.');
+    }
+  }
+
+  function logout() { localStorage.removeItem('adminToken'); token = null; location.reload(); }
+
+  function showApp() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+    loadAll().then(() => switchSection('dashboard'));
+  }
+
+  async function api(path, options = {}) {
+    const res = await fetch(`${API}${path}`, {
+      ...options,
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': token, ...(options.headers || {}) }
+    });
+    return res.json();
+  }
+
+  async function loadAll() {
+    const [cats, prods, ords] = await Promise.all([
+      fetch(`${API}/categories`).then(r => r.json()),
+      fetch(`${API}/products`).then(r => r.json()),
+      api('/orders')
+    ]);
+    state.categories = cats.categories || [];
+    state.products = prods.products || [];
+    state.orders = ords.orders || [];
+  }
+
+  const sections = { dashboard: renderDashboard, products: renderProducts, categories: renderCategories, orders: renderOrders };
+
+  function switchSection(name) {
+    document.querySelectorAll('aside nav button[data-section]').forEach(b => {
+      b.classList.toggle('active', b.dataset.section === name);
+    });
+    sections[name]();
+  }
+
+  document.querySelectorAll('aside nav button[data-section]').forEach(btn => {
+    btn.addEventListener('click', () => switchSection(btn.dataset.section));
+  });
+
+  function renderDashboard() {
+    const pending = state.orders.filter(o => o.status !== 'Delivered' && o.status !== 'Cancelled').length;
+    const revenue = state.orders.filter(o => o.status === 'Delivered').reduce((s, o) => s + o.totalAmount, 0);
+    document.getElementById('mainContent').innerHTML = `
+      <h1>Dashboard</h1>
+      <p class="subtitle">Overview of your grocery business</p>
+      <div class="stats">
+        <div class="stat"><div class="label">Total Orders</div><div class="value">${state.orders.length}</div></div>
+        <div class="stat"><div class="label">Pending</div><div class="value">${pending}</div></div>
+        <div class="stat"><div class="label">Products</div><div class="value">${state.products.length}</div></div>
+        <div class="stat"><div class="label">Revenue</div><div class="value">₹${revenue}</div></div>
+      </div>`;
+  }
+
+  function renderProducts() {
+    document.getElementById('mainContent').innerHTML = `
+      <h1>Products</h1>
+      <p class="subtitle">Manage your grocery catalog</p>
+      <div class="card">
+        <div class="cardHeader">
+          <span>${state.products.length} products</span>
+          <button class="btnPrimary" onclick="openProductModal()">+ Add Product</button>
+        </div>
+        <table>
+          <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Orders</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${state.products.map(p => `
+              <tr>
+                <td>${p.imageUrl ? `<img src="${p.imageUrl}" class="prod-img">` : '📦'}</td>
+                <td><b>${p.name}</b>${p.brand ? '<br><small style="color:#888">' + p.brand + '</small>' : ''}</td>
+                <td>${p.category}</td><td>₹${p.price}</td><td>${p.stock}</td>
+                <td><b style="color: #0c831f;">${p.orderCount || 0}</b></td>
+                <td>
+                  <button class="btnSmall btnEdit" onclick="editProduct('${p._id}')">Edit</button>
+                  <button class="btnSmall btnDel" onclick="deleteProduct('${p._id}')">Delete</button>
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  function openProductModal(product = null) {
+    document.getElementById('productModalTitle').textContent = product ? 'Edit Product' : 'Add Product';
+    document.getElementById('prod_id').value = product?._id || '';
+    document.getElementById('prod_name').value = product?.name || '';
+    document.getElementById('prod_brand').value = product?.brand || '';
+    document.getElementById('prod_packSize').value = product?.packSize || '';
+    document.getElementById('prod_price').value = product?.price || '';
+    document.getElementById('prod_stock').value = product?.stock || '';
+    document.getElementById('prod_imageUrl').value = product?.imageUrl || '';
+    
+    const catSelect = document.getElementById('prod_category');
+    catSelect.innerHTML = state.categories.length
+      ? state.categories.map(c => `<option value="${c.name}" ${c.name === product?.category ? 'selected' : ''}>${c.icon} ${c.name}</option>`).join('')
+      : '<option value="">(Add categories first)</option>';
+    document.getElementById('productModal').classList.add('visible');
+  }
+
+  function editProduct(id) { openProductModal(state.products.find(p => p._id === id)); }
+
+  async function saveProduct() {
+    const id = document.getElementById('prod_id').value;
+    const body = {
+      name: document.getElementById('prod_name').value,
+      brand: document.getElementById('prod_brand').value,
+      category: document.getElementById('prod_category').value,
+      packSize: document.getElementById('prod_packSize').value,
+      price: Number(document.getElementById('prod_price').value),
+      stock: Number(document.getElementById('prod_stock').value),
+      imageUrl: document.getElementById('prod_imageUrl').value
+    };
+    const data = await api(id ? `/products/${id}` : '/products', {
+      method: id ? 'PUT' : 'POST', body: JSON.stringify(body)
+    });
+    if (data.success) { closeModal('productModal'); await loadAll(); renderProducts(); }
+    else alert('❌ ' + data.error);
+  }
+
+  async function deleteProduct(id) {
+    if (!confirm('Delete this product?')) return;
+    await api(`/products/${id}`, { method: 'DELETE' });
+    await loadAll(); renderProducts();
+  }
+
+  function renderCategories() {
+    document.getElementById('mainContent').innerHTML = `
+      <h1>Categories</h1>
+      <p class="subtitle">Organize your catalog</p>
+      <div class="card">
+        <div class="cardHeader">
+          <span>${state.categories.length} categories</span>
+          <button class="btnPrimary" onclick="openCategoryModal()">+ Add Category</button>
+        </div>
+        <table>
+          <thead><tr><th>Icon</th><th>Name</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${state.categories.map(c => `
+              <tr>
+                <td style="font-size: 20px;">${c.icon.startsWith('http') ? `<img src="${c.icon}" class="prod-img">` : c.icon}</td>
+                <td><b>${c.name}</b></td>
+                <td>
+                  <button class="btnSmall btnEdit" onclick="editCategory('${c._id}')">Edit</button>
+                  <button class="btnSmall btnDel" onclick="deleteCategory('${c._id}')">Delete</button>
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  function openCategoryModal(category = null) {
+    document.getElementById('categoryModalTitle').textContent = category ? 'Edit Category' : 'Add Category';
+    document.getElementById('cat_id').value = category?._id || '';
+    document.getElementById('cat_name').value = category?.name || '';
+    document.getElementById('cat_icon').value = category?.icon || '';
+    document.getElementById('categoryModal').classList.add('visible');
+  }
+
+  function editCategory(id) {
+    openCategoryModal(state.categories.find(c => c._id === id));
+  }
+
+  async function saveCategory() {
+    const id = document.getElementById('cat_id').value;
+    const body = {
+      name: document.getElementById('cat_name').value,
+      icon: document.getElementById('cat_icon').value || '📦'
+    };
+    
+    const endpoint = id ? `/categories/${id}` : '/categories';
+    const method = id ? 'PUT' : 'POST';
+
+    const data = await api(endpoint, { method, body: JSON.stringify(body) });
+    if (data.success) {
+      closeModal('categoryModal');
+      await loadAll(); renderCategories();
+    } else alert('❌ ' + data.error);
+  }
+
+  async function deleteCategory(id) {
+    if (!confirm('Delete this category?')) return;
+    await api(`/categories/${id}`, { method: 'DELETE' });
+    await loadAll(); renderCategories();
+  }
+
+  function renderOrders() {
+    document.getElementById('mainContent').innerHTML = `
+      <h1>Orders</h1>
+      <p class="subtitle">Manage incoming orders and delivery</p>
+      <div class="card">
+        ${state.orders.length === 0 ? '<p style="text-align:center; color:#999; padding:40px 0;">No orders yet</p>' :
+          state.orders.map(o => `
+            <div class="orderCard">
+              <div class="top">
+                <div>
+                  <b>#${o._id.slice(-6).toUpperCase()}</b>
+                  <span style="color:#999; font-size:12px; margin-left:8px;">${new Date(o.createdAt).toLocaleString('en-IN')}</span>
+                </div>
+                <span style="background:#e3f2fd; color:#1565c0; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:bold;">${o.status}</span>
+              </div>
+              <div style="font-size:13px; margin-bottom:6px;">
+                <b>${o.customer.name}</b> • ${o.customer.phone}<br>
+                <span style="color:#666;">${o.customer.address}</span>
+              </div>
+              <div class="items">${o.items.map(i => `${i.name} × ${i.quantity}`).join(' • ')}</div>
+              <div style="font-weight:bold; color:#2e7d32; margin-bottom:10px;">Total: ₹${o.totalAmount} (${o.paymentMethod})</div>
+              <div class="actions">
+                <select id="st-${o._id}">
+                  ${['Placed','Confirmed','Out for Delivery','Delivered','Cancelled'].map(s => `<option ${s === o.status ? 'selected' : ''}>${s}</option>`).join('')}
+                </select>
+                <input id="rd-${o._id}" placeholder="Rider/Porter ID" value="${o.deliveryPartner || ''}">
+                <button class="btnPrimary" style="padding: 6px 14px; font-size: 12px;" onclick="updateOrder('${o._id}')">Update</button>
+              </div>
+            </div>`).join('')}
+      </div>`;
+  }
+
+  async function updateOrder(id) {
+    const status = document.getElementById('st-' + id).value;
+    const deliveryPartner = document.getElementById('rd-' + id).value;
+    const data = await api(`/orders/${id}/status`, { method: 'PUT', body: JSON.stringify({ status, deliveryPartner }) });
+    if (data.success) { await loadAll(); renderOrders(); alert('✅ Updated'); }
+    else alert('❌ ' + data.error);
+  }
+
+  function closeModal(id) { document.getElementById(id).classList.remove('visible'); }
+
+  if (token) showApp();
+  document.getElementById('passwordInput').addEventListener('keypress', e => { if (e.key === 'Enter') login(); });
+</script>
+</body>
+</html>
