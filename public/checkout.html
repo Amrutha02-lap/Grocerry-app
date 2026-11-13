@@ -14,6 +14,7 @@
   
   .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: #111; margin-top: 24px; }
   
+  /* Address Cards */
   .address-card { background: white; border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin-bottom: 12px; cursor: pointer; }
   .address-card.selected { border: 2px solid #1ABC9C; background: #f0fdfa; }
   .address-card h4 { font-size: 15px; margin-bottom: 4px; }
@@ -25,14 +26,16 @@
   .input-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; outline: none; }
   .input-group input:focus { border-color: #1ABC9C; }
   
-  /* Payment Options List */
+  /* Payment Options */
   .payment-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
   .pay-card { background: white; border: 1px solid #ddd; border-radius: 12px; padding: 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 500; }
   .pay-card.selected { border: 2px solid #1ABC9C; background: #f0fdfa; }
   .pay-icon { font-size: 20px; margin-right: 10px; }
   
-  .submit-btn { width: 100%; padding: 16px; background: #1ABC9C; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(26, 188, 156, 0.3); }
-  .submit-btn:disabled { background: #ccc; box-shadow: none; }
+  /* Buttons */
+  .btn-main { width: 100%; padding: 16px; background: #1ABC9C; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(26, 188, 156, 0.3); margin-bottom: 12px; }
+  .btn-main:disabled { background: #ccc; box-shadow: none; }
+  .btn-outline { width: 100%; padding: 14px; background: transparent; color: #436ca4; border: 2px solid #436ca4; border-radius: 12px; font-size: 15px; font-weight: bold; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -42,57 +45,59 @@
   <h2>Checkout</h2>
 </div>
 
-<div class="section-title">1. Delivery Address</div>
-<div id="savedAddresses"></div>
+<!-- STEP 1: ADDRESS -->
+<div id="step-address">
+  <div class="section-title">Delivery Address</div>
+  <div id="savedAddresses"></div>
 
-<div class="address-card" id="addNewBtn" onclick="showNewAddressForm()" style="border-style: dashed; text-align: center; color: #1ABC9C; font-weight: bold;">
-  + Add New Address
+  <div class="address-card" id="addNewBtn" onclick="showNewAddressForm()" style="border-style: dashed; text-align: center; color: #1ABC9C; font-weight: bold;">
+    + Add New Address
+  </div>
+
+  <div class="new-address-form" id="newAddressForm">
+    <div class="input-group"><label>Full Name</label><input id="name" required></div>
+    <div class="input-group"><label>Phone Number</label><input id="phone" type="tel" required></div>
+    <div class="input-group"><label>House / Flat / Building No.</label><input id="house" required></div>
+    <div class="input-group"><label>Street / Area</label><input id="street" required></div>
+    <div class="input-group"><label>Landmark (Optional)</label><input id="landmark"></div>
+    <div class="input-group"><label>City / Pincode</label><input id="city" required></div>
+    <button class="btn-main" onclick="saveNewAddress()">Save Address</button>
+  </div>
+
+  <button class="btn-main" id="continueBtn" onclick="goToPayment()" disabled style="margin-top: 24px;">Continue to Payment</button>
 </div>
 
-<div class="new-address-form" id="newAddressForm">
-  <div class="input-group"><label>Full Name</label><input id="name" required></div>
-  <div class="input-group"><label>Phone Number</label><input id="phone" type="tel" required></div>
-  <div class="input-group"><label>House / Flat / Building No.</label><input id="house" required></div>
-  <div class="input-group"><label>Street / Area</label><input id="street" required></div>
-  <div class="input-group"><label>Landmark (Optional)</label><input id="landmark"></div>
-  <div class="input-group"><label>City / Pincode</label><input id="city" required></div>
-  <button class="submit-btn" style="padding: 10px; font-size: 14px;" onclick="saveNewAddress()">Save Address</button>
+<!-- STEP 2: PAYMENT -->
+<div id="step-payment" style="display: none;">
+  <div class="section-title">Select Payment Method</div>
+  
+  <div class="payment-options">
+    <div class="pay-card selected" id="pay-COD" onclick="selectPayment('COD')">
+      <div><span class="pay-icon">💵</span> Cash on Delivery</div>
+      <div id="check-COD">✅</div>
+    </div>
+    <div class="pay-card" id="pay-UPI" onclick="selectPayment('UPI')">
+      <div><span class="pay-icon">📱</span> UPI (GPay, PhonePe)</div>
+      <div id="check-UPI"></div>
+    </div>
+    <div class="pay-card" id="pay-CARD" onclick="selectPayment('CARD')">
+      <div><span class="pay-icon">💳</span> Credit / Debit Card</div>
+      <div id="check-CARD"></div>
+    </div>
+  </div>
+
+  <button class="btn-main" id="submitBtn" onclick="placeOrder()">Place Order</button>
+  <button class="btn-outline" onclick="goToAddress()">← Change Address</button>
 </div>
 
-<div class="section-title">2. Payment Method</div>
-<div class="payment-options">
-  <div class="pay-card selected" id="pay-COD" onclick="selectPayment('COD')">
-    <div><span class="pay-icon">💵</span> Cash on Delivery</div>
-    <div id="check-COD">✅</div>
-  </div>
-  <div class="pay-card" id="pay-UPI" onclick="selectPayment('UPI')">
-    <div><span class="pay-icon">📱</span> UPI (GPay, PhonePe)</div>
-    <div id="check-UPI"></div>
-  </div>
-  <div class="pay-card" id="pay-CARD" onclick="selectPayment('CARD')">
-    <div><span class="pay-icon">💳</span> Credit / Debit Card</div>
-    <div id="check-CARD"></div>
-  </div>
-</div>
-
-<button class="submit-btn" id="submitBtn" onclick="placeOrder()">Place Order</button>
-<a href="/" style="display:block; text-align: center; margin-top: 16px; color: #666; text-decoration: none;">← Back to Home</a>
+<a href="/" style="display:block; text-align: center; margin-top: 24px; color: #666; text-decoration: none;">← Back to Home</a>
 
 <script>
   let addresses = JSON.parse(localStorage.getItem('customerAddresses') || '[]');
   let selectedAddressIndex = -1;
   let selectedPaymentMethod = 'COD';
 
-  function selectPayment(method) {
-    selectedPaymentMethod = method;
-    ['COD', 'UPI', 'CARD'].forEach(m => {
-      document.getElementById('pay-' + m).classList.remove('selected');
-      document.getElementById('check-' + m).textContent = '';
-    });
-    document.getElementById('pay-' + method).classList.add('selected');
-    document.getElementById('check-' + method).textContent = '✅';
-  }
-
+  // --- STEP 1 LOGIC ---
   function renderAddresses() {
     const container = document.getElementById('savedAddresses');
     if (addresses.length === 0) {
@@ -113,11 +118,13 @@
     selectedAddressIndex = index;
     renderAddresses();
     document.getElementById('newAddressForm').style.display = 'none';
+    document.getElementById('continueBtn').disabled = false; // Enable continue button
   }
 
   function showNewAddressForm() {
     document.getElementById('newAddressForm').style.display = 'block';
     selectedAddressIndex = -1;
+    document.getElementById('continueBtn').disabled = true;
     renderAddresses();
   }
 
@@ -135,12 +142,38 @@
     addresses.push(newAddr);
     localStorage.setItem('customerAddresses', JSON.stringify(addresses));
     selectedAddressIndex = addresses.length - 1;
+    
     renderAddresses();
     document.getElementById('newAddressForm').style.display = 'none';
+    document.getElementById('continueBtn').disabled = false;
   }
 
+  // --- PAGE TRANSITIONS ---
+  function goToPayment() {
+    if (selectedAddressIndex === -1) return alert("Please select an address.");
+    document.getElementById('step-address').style.display = 'none';
+    document.getElementById('step-payment').style.display = 'block';
+  }
+
+  function goToAddress() {
+    document.getElementById('step-payment').style.display = 'none';
+    document.getElementById('step-address').style.display = 'block';
+  }
+
+  // --- STEP 2 LOGIC ---
+  function selectPayment(method) {
+    selectedPaymentMethod = method;
+    ['COD', 'UPI', 'CARD'].forEach(m => {
+      document.getElementById('pay-' + m).classList.remove('selected');
+      document.getElementById('check-' + m).textContent = '';
+    });
+    document.getElementById('pay-' + method).classList.add('selected');
+    document.getElementById('check-' + method).textContent = '✅';
+  }
+
+  // --- PLACE ORDER ---
   async function placeOrder() {
-    if (selectedAddressIndex === -1) return alert("Please select or add a delivery address.");
+    if (selectedAddressIndex === -1) return alert("Please select an address.");
 
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
@@ -222,7 +255,11 @@
     }
   }
 
+  // Initialize
   renderAddresses();
+  if (addresses.length > 0) {
+    selectAddress(0); 
+  }
 </script>
 </body>
 </html>
