@@ -6,15 +6,15 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
-  body { background: #f8f9fa; padding: 16px; color: #333; }
+  body { background: #f0f4f8; padding: 16px; color: #333; }
   
   .top-nav { margin-bottom: 16px; display: flex; align-items: center; gap: 16px; }
   .back-btn { font-size: 20px; text-decoration: none; color: #333; font-weight: bold; }
   h2 { font-size: 20px; }
   
-  .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: #111; }
+  .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: #111; margin-top: 24px; }
   
-  .address-card { background: white; border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; }
+  .address-card { background: white; border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin-bottom: 12px; cursor: pointer; }
   .address-card.selected { border: 2px solid #1ABC9C; background: #f0fdfa; }
   .address-card h4 { font-size: 15px; margin-bottom: 4px; }
   .address-card p { font-size: 13px; color: #666; line-height: 1.4; }
@@ -25,8 +25,11 @@
   .input-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; outline: none; }
   .input-group input:focus { border-color: #1ABC9C; }
   
-  .payment-section { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
-  select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; outline: none; }
+  /* Payment Options List */
+  .payment-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .pay-card { background: white; border: 1px solid #ddd; border-radius: 12px; padding: 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 500; }
+  .pay-card.selected { border: 2px solid #1ABC9C; background: #f0fdfa; }
+  .pay-icon { font-size: 20px; margin-right: 10px; }
   
   .submit-btn { width: 100%; padding: 16px; background: #1ABC9C; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(26, 188, 156, 0.3); }
   .submit-btn:disabled { background: #ccc; box-shadow: none; }
@@ -47,38 +50,56 @@
 </div>
 
 <div class="new-address-form" id="newAddressForm">
-  <div class="input-group"><label>Full Name</label><input id="name" placeholder="e.g. Amrutha" required></div>
-  <div class="input-group"><label>Phone Number</label><input id="phone" type="tel" placeholder="10-digit mobile number" required></div>
-  <div class="input-group"><label>House / Flat / Building No.</label><input id="house" placeholder="e.g. Flat 204, Skyview Apartments" required></div>
-  <div class="input-group"><label>Street / Area</label><input id="street" placeholder="e.g. Byagadadenahalli" required></div>
-  <div class="input-group"><label>Landmark (Optional)</label><input id="landmark" placeholder="e.g. Near Anekal Bus Stand"></div>
-  <div class="input-group"><label>City / Pincode</label><input id="city" placeholder="e.g. Anekal, 562106" required></div>
+  <div class="input-group"><label>Full Name</label><input id="name" required></div>
+  <div class="input-group"><label>Phone Number</label><input id="phone" type="tel" required></div>
+  <div class="input-group"><label>House / Flat / Building No.</label><input id="house" required></div>
+  <div class="input-group"><label>Street / Area</label><input id="street" required></div>
+  <div class="input-group"><label>Landmark (Optional)</label><input id="landmark"></div>
+  <div class="input-group"><label>City / Pincode</label><input id="city" required></div>
   <button class="submit-btn" style="padding: 10px; font-size: 14px;" onclick="saveNewAddress()">Save Address</button>
 </div>
 
 <div class="section-title">2. Payment Method</div>
-<div class="payment-section">
-  <select id="payment">
-    <option value="COD">Cash on Delivery</option>
-    <option value="UPI">UPI (Razorpay)</option>
-  </select>
+<div class="payment-options">
+  <div class="pay-card selected" id="pay-COD" onclick="selectPayment('COD')">
+    <div><span class="pay-icon">💵</span> Cash on Delivery</div>
+    <div id="check-COD">✅</div>
+  </div>
+  <div class="pay-card" id="pay-UPI" onclick="selectPayment('UPI')">
+    <div><span class="pay-icon">📱</span> UPI (GPay, PhonePe)</div>
+    <div id="check-UPI"></div>
+  </div>
+  <div class="pay-card" id="pay-CARD" onclick="selectPayment('CARD')">
+    <div><span class="pay-icon">💳</span> Credit / Debit Card</div>
+    <div id="check-CARD"></div>
+  </div>
 </div>
 
 <button class="submit-btn" id="submitBtn" onclick="placeOrder()">Place Order</button>
-<a href="/" style="display:block; text-align:center; margin-top:16px; color:#666; text-decoration:none;">← Back to Home</a>
+<a href="/" style="display:block; text-align: center; margin-top: 16px; color: #666; text-decoration: none;">← Back to Home</a>
 
 <script>
   let addresses = JSON.parse(localStorage.getItem('customerAddresses') || '[]');
   let selectedAddressIndex = -1;
+  let selectedPaymentMethod = 'COD';
+
+  function selectPayment(method) {
+    selectedPaymentMethod = method;
+    ['COD', 'UPI', 'CARD'].forEach(m => {
+      document.getElementById('pay-' + m).classList.remove('selected');
+      document.getElementById('check-' + m).textContent = '';
+    });
+    document.getElementById('pay-' + method).classList.add('selected');
+    document.getElementById('check-' + method).textContent = '✅';
+  }
 
   function renderAddresses() {
     const container = document.getElementById('savedAddresses');
     if (addresses.length === 0) {
       container.innerHTML = '';
-      showNewAddressForm(); // Automatically show form if no addresses
+      showNewAddressForm();
       return;
     }
-
     container.innerHTML = addresses.map((addr, index) => `
       <div class="address-card ${index === selectedAddressIndex ? 'selected' : ''}" onclick="selectAddress(${index})">
         <h4>${addr.name} • ${addr.phone}</h4>
@@ -108,23 +129,18 @@
     const landmark = document.getElementById('landmark').value;
     const city = document.getElementById('city').value;
 
-    if (!name || !phone || !house || !street || !city) {
-      return alert("Please fill all required fields.");
-    }
+    if (!name || !phone || !house || !street || !city) return alert("Please fill all required fields.");
 
     const newAddr = { name, phone, house, street, landmark, city };
     addresses.push(newAddr);
     localStorage.setItem('customerAddresses', JSON.stringify(addresses));
-    
     selectedAddressIndex = addresses.length - 1;
     renderAddresses();
     document.getElementById('newAddressForm').style.display = 'none';
   }
 
   async function placeOrder() {
-    if (selectedAddressIndex === -1) {
-      return alert("Please select or add a delivery address.");
-    }
+    if (selectedAddressIndex === -1) return alert("Please select or add a delivery address.");
 
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
@@ -135,27 +151,54 @@
     
     const cart = JSON.parse(localStorage.getItem('cart') || '{}');
     const items = Object.entries(cart).filter(([_, v]) => v.quantity > 0).map(([id, v]) => ({ product: id, quantity: v.quantity }));
-    const paymentMethod = document.getElementById('payment').value;
     let totalAmount = Object.values(cart).reduce((s, i) => s + i.price * i.quantity, 0);
 
     if (items.length === 0) {
       alert('Cart is empty'); btn.disabled = false; btn.textContent = 'Place Order'; return;
     }
 
-    if (paymentMethod === 'COD') {
+    if (selectedPaymentMethod === 'COD') {
       await submitOrderToDB(addr.name, addr.phone, fullAddress, items, 'COD');
     } else {
-      // Razorpay Logic (Same as before)
-      alert('Razorpay is in test mode. Please select Cash on Delivery.');
-      btn.disabled = false; btn.textContent = 'Place Order';
+      // For UPI or Card, we use Razorpay
+      try {
+        const res = await fetch('/api/payment/create-order', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: totalAmount * 100 }) 
+        });
+        const data = await res.json();
+        
+        if (!data.success) throw new Error(data.error);
+
+        const options = {
+          key: "YOUR_RAZORPAY_KEY_ID", // Put your Razorpay Key here later
+          amount: data.order.amount,
+          currency: "INR",
+          name: "Fresh Groceries",
+          order_id: data.order.id,
+          handler: async function (response) {
+            alert("Payment Successful!");
+            await submitOrderToDB(addr.name, addr.phone, fullAddress, items, selectedPaymentMethod); 
+          },
+          theme: { color: "#1ABC9C" }
+        };
+        
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', function (response){
+          alert("Payment Failed: " + response.error.description);
+          btn.disabled = false; btn.textContent = 'Place Order';
+        });
+        rzp.open();
+
+      } catch (err) {
+        alert('❌ ' + err.message + '\nPlease select Cash on Delivery to test.');
+        btn.disabled = false; btn.textContent = 'Place Order';
+      }
     }
   }
 
   async function submitOrderToDB(name, phone, address, items, paymentType) {
-    const body = {
-      customer: { name, phone, address },
-      items, paymentMethod: paymentType
-    };
+    const body = { customer: { name, phone, address }, items, paymentMethod: paymentType };
 
     try {
       const res = await fetch('/api/orders', {
