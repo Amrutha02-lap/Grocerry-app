@@ -8,6 +8,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, sans-serif; background: #f0f2f5; }
 
+  /* Login Screen */
   #loginScreen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #2e7d32, #1b5e20); }
   .loginBox { background: white; padding: 32px; border-radius: 16px; width: 340px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
   .loginBox h1 { font-size: 22px; margin-bottom: 6px; }
@@ -15,6 +16,7 @@
   .loginBox input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 12px; font-size: 15px; }
   .loginBox button { width: 100%; padding: 12px; background: #2e7d32; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
 
+  /* Main App Layout */
   #app { display: none; min-height: 100vh; }
   #app.visible { display: flex; }
   aside { width: 220px; background: #1b5e20; color: white; padding: 20px 0; min-height: 100vh; flex-shrink: 0; }
@@ -27,11 +29,13 @@
   main h1 { font-size: 22px; margin-bottom: 4px; }
   main .subtitle { color: #666; font-size: 13px; margin-bottom: 20px; }
 
+  /* Dashboard Stats */
   .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
   .stat { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
   .stat .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
   .stat .value { font-size: 28px; font-weight: bold; color: #2e7d32; margin-top: 6px; }
 
+  /* Cards & Tables */
   .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
   .cardHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
   .btnPrimary { background: #2e7d32; color: white; padding: 10px 18px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; }
@@ -46,6 +50,7 @@
   tr:hover { background: #f9f9f9; }
   .prod-img { width: 40px; height: 40px; object-fit: contain; border-radius: 4px; background: #f5f5f5; }
 
+  /* Modals */
   .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
   .modal.visible { display: flex; }
   .modalBox { background: white; padding: 24px; border-radius: 12px; width: 100%; max-width: 420px; max-height: 90vh; overflow-y: auto; }
@@ -57,6 +62,7 @@
   .modalBox .actions .save { background: #2e7d32; color: white; }
   .modalBox .actions .cancel { background: #eee; color: #333; }
 
+  /* Order Cards */
   .orderCard { border: 1px solid #eee; border-radius: 10px; padding: 14px; margin-bottom: 10px; }
   .orderCard .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
   .orderCard .items { font-size: 12px; color: #666; margin: 8px 0; }
@@ -66,6 +72,7 @@
 </head>
 <body>
 
+<!-- LOGIN SCREEN -->
 <div id="loginScreen">
   <div class="loginBox">
     <h1>🔐 Admin Login</h1>
@@ -75,6 +82,7 @@
   </div>
 </div>
 
+<!-- MAIN APP -->
 <div id="app">
   <aside>
     <h2>🥬 Admin Panel</h2>
@@ -89,34 +97,42 @@
   <main id="mainContent"></main>
 </div>
 
+<!-- PRODUCT MODAL (Form added for Enter key support) -->
 <div class="modal" id="productModal">
   <div class="modalBox">
     <h3 id="productModalTitle">Add Product</h3>
-    <input type="hidden" id="prod_id" />
-    <label>Name</label><input id="prod_name" />
-    <label>Brand</label><input id="prod_brand" />
-    <label>Category</label><select id="prod_category"></select>
-    <label>Pack Size</label><input id="prod_packSize" placeholder="e.g. 500ml" />
-    <label>Price (₹)</label><input id="prod_price" type="number" />
-    <label>Stock</label><input id="prod_stock" type="number" />
-    <label>Image URL (optional)</label><input id="prod_imageUrl" placeholder="https://example.com/image.jpg" />
-    <div class="actions">
-      <button class="cancel" onclick="closeModal('productModal')">Cancel</button>
-      <button class="save" onclick="saveProduct()">Save</button>
-    </div>
+    <form id="productForm" onsubmit="event.preventDefault(); saveProduct();">
+      <input type="hidden" id="prod_id" />
+      <label>Name</label><input id="prod_name" required />
+      <label>Brand</label><input id="prod_brand" />
+      <label>Category</label><select id="prod_category"></select>
+      <label>Pack Size</label><input id="prod_packSize" required />
+      <label>Price (₹)</label><input id="prod_price" type="number" required />
+      <label>Stock</label><input id="prod_stock" type="number" required />
+      <label>Image URL (optional)</label><input id="prod_imageUrl" placeholder="https://..." />
+      
+      <div class="actions">
+        <button type="button" class="cancel" onclick="closeModal('productModal')">Cancel</button>
+        <button type="submit" class="save">Save</button>
+      </div>
+    </form>
   </div>
 </div>
 
+<!-- CATEGORY MODAL (Form added for Enter key support) -->
 <div class="modal" id="categoryModal">
   <div class="modalBox">
     <h3 id="categoryModalTitle">Add Category</h3>
-    <input type="hidden" id="cat_id" />
-    <label>Name</label><input id="cat_name" />
-    <label>Icon (emoji or Image URL)</label><input id="cat_icon" placeholder="📦 or https://..." />
-    <div class="actions">
-      <button class="cancel" onclick="closeModal('categoryModal')">Cancel</button>
-      <button class="save" onclick="saveCategory()">Save</button>
-    </div>
+    <form id="categoryForm" onsubmit="event.preventDefault(); saveCategory();">
+      <input type="hidden" id="cat_id" />
+      <label>Name</label><input id="cat_name" required />
+      <label>Icon (emoji or Image URL)</label><input id="cat_icon" placeholder="📦 or https://..." />
+      
+      <div class="actions">
+        <button type="button" class="cancel" onclick="closeModal('categoryModal')">Cancel</button>
+        <button type="submit" class="save">Save</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -142,7 +158,7 @@
         alert('❌ ' + data.error);
       }
     } catch (err) {
-      alert('❌ Could not connect to server.');
+      alert('❌ Could not connect to server. It might be waking up. Please wait 30 seconds and try again.');
     }
   }
 
@@ -163,14 +179,18 @@
   }
 
   async function loadAll() {
-    const [cats, prods, ords] = await Promise.all([
-      fetch(`${API}/categories`).then(r => r.json()),
-      fetch(`${API}/products`).then(r => r.json()),
-      api('/orders')
-    ]);
-    state.categories = cats.categories || [];
-    state.products = prods.products || [];
-    state.orders = ords.orders || [];
+    try {
+      const [cats, prods, ords] = await Promise.all([
+        fetch(`${API}/categories`).then(r => r.json()),
+        fetch(`${API}/products`).then(r => r.json()),
+        api('/orders')
+      ]);
+      state.categories = cats.categories || [];
+      state.products = prods.products || [];
+      state.orders = ords.orders || [];
+    } catch (err) {
+      console.error('Failed to load data', err);
+    }
   }
 
   const sections = { dashboard: renderDashboard, products: renderProducts, categories: renderCategories, orders: renderOrders };
@@ -258,11 +278,20 @@
       stock: Number(document.getElementById('prod_stock').value),
       imageUrl: document.getElementById('prod_imageUrl').value
     };
-    const data = await api(id ? `/products/${id}` : '/products', {
-      method: id ? 'PUT' : 'POST', body: JSON.stringify(body)
-    });
-    if (data.success) { closeModal('productModal'); await loadAll(); renderProducts(); }
-    else alert('❌ ' + data.error);
+    try {
+      const data = await api(id ? `/products/${id}` : '/products', {
+        method: id ? 'PUT' : 'POST', body: JSON.stringify(body)
+      });
+      if (data.success) { 
+        closeModal('productModal'); 
+        await loadAll(); 
+        renderProducts(); 
+      } else {
+        alert('❌ ' + data.error);
+      }
+    } catch(err) {
+      alert('❌ Error saving product. Server might be waking up.');
+    }
   }
 
   async function deleteProduct(id) {
@@ -319,11 +348,18 @@
     const endpoint = id ? `/categories/${id}` : '/categories';
     const method = id ? 'PUT' : 'POST';
 
-    const data = await api(endpoint, { method, body: JSON.stringify(body) });
-    if (data.success) {
-      closeModal('categoryModal');
-      await loadAll(); renderCategories();
-    } else alert('❌ ' + data.error);
+    try {
+      const data = await api(endpoint, { method, body: JSON.stringify(body) });
+      if (data.success) {
+        closeModal('categoryModal');
+        await loadAll(); 
+        renderCategories();
+      } else {
+        alert('❌ ' + data.error);
+      }
+    } catch (err) {
+      alert('❌ Error saving category. Server might be waking up.');
+    }
   }
 
   async function deleteCategory(id) {
@@ -367,9 +403,18 @@
   async function updateOrder(id) {
     const status = document.getElementById('st-' + id).value;
     const deliveryPartner = document.getElementById('rd-' + id).value;
-    const data = await api(`/orders/${id}/status`, { method: 'PUT', body: JSON.stringify({ status, deliveryPartner }) });
-    if (data.success) { await loadAll(); renderOrders(); alert('✅ Updated'); }
-    else alert('❌ ' + data.error);
+    try {
+      const data = await api(`/orders/${id}/status`, { method: 'PUT', body: JSON.stringify({ status, deliveryPartner }) });
+      if (data.success) { 
+        await loadAll(); 
+        renderOrders(); 
+        alert('✅ Updated'); 
+      } else {
+        alert('❌ ' + data.error);
+      }
+    } catch(err) {
+      alert('❌ Error updating order.');
+    }
   }
 
   function closeModal(id) { document.getElementById(id).classList.remove('visible'); }
