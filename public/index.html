@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #fdfbf7; font-family: 'Lato', sans-serif; padding-bottom: 80px; color: #333; }
+  body { background: #f6f3eb; font-family: 'Lato', sans-serif; padding-bottom: 80px; color: #333; }
   
   /* Elegant Header */
   header { background: #111; padding: 16px 20px; position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
@@ -15,39 +15,39 @@
   .nav-icons { display: flex; gap: 16px; color: #fff; font-size: 20px; cursor: pointer; }
   
   /* Hero Section */
-  .hero { background: #e8e2d9; padding: 60px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; }
-  .hero h1 { font-family: 'Playfair Display', serif; font-size: 32px; color: #111; margin-bottom: 12px; letter-spacing: 1px; }
+  .hero { background: #e8e2d9; padding: 60px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 320px; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: 34px; color: #111; margin-bottom: 12px; letter-spacing: 1px; }
   .hero p { font-size: 14px; color: #555; margin-bottom: 24px; max-width: 300px; line-height: 1.5; }
-  .hero-btn { background: #111; color: #d4af37; padding: 12px 30px; text-decoration: none; font-size: 13px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; border: 1px solid #111; transition: 0.3s; }
-  .hero-btn:hover { background: #d4af37; color: #111; border-color: #d4af37; }
+  .hero-btn { background: #111; color: #d4af37; padding: 14px 36px; text-decoration: none; font-size: 13px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; border: 1px solid #111; transition: 0.3s; }
+  .hero-btn:hover { background: #d4af37; color: #111; }
 
   /* Search Bar */
-  .search-wrap { padding: 16px 20px; background: #fff; }
-  .search-bar { background: #f5f5f5; padding: 12px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #ddd; }
+  .search-wrap { padding: 20px; background: #fff; }
+  .search-bar { background: #f6f3eb; padding: 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #ddd; }
   .search-bar input { border: none; background: transparent; width: 100%; outline: none; font-size: 14px; color: #333; }
 
-  /* Top Categories (Horizontal Scroll) */
-  .categories-wrap { padding: 24px 20px; }
-  .section-title { font-family: 'Playfair Display', serif; font-size: 22px; color: #111; margin-bottom: 16px; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
-  .categories { display: flex; gap: 20px; overflow-x: auto; scrollbar-width: none; }
-  .categories::-webkit-scrollbar { display: none; }
-  .cat-item { display: flex; flex-direction: column; align-items: center; gap: 8px; text-decoration: none; color: #333; min-width: 80px; }
-  .cat-icon { width: 70px; height: 70px; background: #fff; border: 1px solid #d4af37; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-  .cat-icon img { width: 100%; height: 100%; object-fit: cover; }
-  .cat-name { font-size: 12px; font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
+  /* Main Categories (Big Cards) */
+  .categories-wrap { padding: 30px 20px; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: 24px; color: #111; margin-bottom: 20px; text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+  .cat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+  .cat-card { position: relative; height: 200px; border-radius: 8px; overflow: hidden; text-decoration: none; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+  .cat-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+  .cat-card:hover img { transform: scale(1.05); }
+  .cat-card .overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); }
+  .cat-card h3 { position: relative; z-index: 2; font-family: 'Playfair Display', serif; color: #d4af37; font-size: 22px; letter-spacing: 2px; text-transform: uppercase; }
 
   /* Product Grid */
-  .products-wrap { padding: 0 20px 24px; }
+  .products-wrap { padding: 0 20px 30px; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
-  .card { background: #fff; padding: 12px; text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: 0.3s; border: 1px solid #eee; }
+  .card { background: #fff; padding: 12px; text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: 0.3s; border: 1px solid #eee; border-radius: 8px; }
   .card:hover { box-shadow: 0 10px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
-  .card-img { width: 100%; height: 200px; object-fit: cover; margin-bottom: 12px; background: #f9f9f9; }
-  .card-emoji { font-size: 50px; text-align: center; margin-bottom: 10px; height: 200px; display: flex; align-items: center; justify-content: center; background: #f9f9f9; }
+  .card-img { width: 100%; height: 180px; object-fit: cover; margin-bottom: 12px; background: #f9f9f9; border-radius: 4px; }
+  .card-emoji { font-size: 50px; text-align: center; margin-bottom: 10px; height: 180px; display: flex; align-items: center; justify-content: center; background: #f9f9f9; border-radius: 4px; }
   .card h3 { font-family: 'Playfair Display', serif; font-size: 16px; margin-bottom: 4px; color: #111; }
   .card .brand { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
   .priceRow { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
   .price { font-size: 16px; font-weight: bold; color: #111; }
-  .addBtn { background: #111; color: #d4af37; border: none; padding: 6px 14px; font-size: 11px; font-weight: bold; text-transform: uppercase; cursor: pointer; }
+  .addBtn { background: #111; color: #d4af37; border: none; padding: 6px 14px; font-size: 11px; font-weight: bold; text-transform: uppercase; cursor: pointer; border-radius: 4px; }
   
   /* Bottom Cart Bar */
   #cart { position: fixed; bottom: 0; left: 0; right: 0; background: #111; color: #d4af37; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 20; font-weight: bold; letter-spacing: 1px; }
@@ -68,7 +68,6 @@
 </head>
 <body>
 
-<!-- Overlay & Side Menu -->
 <div id="overlay" onclick="toggleMenu()"></div>
 <div id="sideMenu">
   <div class="side-header">
@@ -83,40 +82,35 @@
   </div>
 </div>
 
-<!-- Premium Header -->
 <header>
   <div class="nav-icons" onclick="toggleMenu()">☰</div>
   <a href="/" class="logo">AJ</a>
   <div class="nav-icons">🛒</div>
 </header>
 
-<!-- Hero Section -->
 <div class="hero">
   <h1>Premium Collections</h1>
   <p>Discover our exclusive range of fashion, beauty, and gourmet essentials.</p>
   <a href="#shop" class="hero-btn">Shop Now</a>
 </div>
 
-<!-- Search Bar -->
 <div class="search-wrap">
   <div class="search-bar">
     🔍 <input type="text" id="searchInput" placeholder="Search for dresses, skincare, groceries...">
   </div>
 </div>
 
-<!-- Top Categories -->
+<!-- Main Categories (Card Style) -->
 <div class="categories-wrap" id="categoriesWrap">
-  <div class="section-title">Curated Categories</div>
-  <div class="categories" id="categoryList"></div>
+  <div class="section-title">Shop by Department</div>
+  <div class="cat-grid" id="categoryList"></div>
 </div>
 
-<!-- Product Grid -->
 <div class="products-wrap" id="shop">
   <div class="section-title" id="mainSectionTitle">Featured Products</div>
   <div class="grid" id="productGrid"><p>Loading collections...</p></div>
 </div>
 
-<!-- Cart Bar -->
 <div id="cart" class="hidden">
   <span id="cartInfo">0 items • ₹0</span>
   <a href="/cart.html">View Bag →</a>
@@ -124,11 +118,13 @@
 
 <script>
   const API = '/api';
-  const categoryIcons = { 
-    'Clothes - Men': '👔', 'Clothes - Women': '👗', 'Clothes - Kids': '🧸',
-    'Cosmetics - Skincare': '🧴', 'Cosmetics - Makeup': '💄',
-    'Groceries': '🛒', 'Accessories': '👜'
-  };
+  
+  // Aesthetic placeholders for the main categories
+  const mainCategories = [
+    { name: 'Clothes', image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=600&auto=format&fit=crop' },
+    { name: 'Cosmetics', image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600&auto=format&fit=crop' },
+    { name: 'Groceries', image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=600&auto=format&fit=crop' }
+  ];
 
   function getCart() { return JSON.parse(localStorage.getItem('cart') || '{}'); }
   function saveCart(cart) { localStorage.setItem('cart', JSON.stringify(cart)); }
@@ -146,21 +142,16 @@
     document.getElementById('menuPhone').textContent = savedDetails.phone;
   }
 
-  async function loadCategories() {
-    try {
-      const res = await fetch(`${API}/categories`);
-      const data = await res.json();
-      const list = document.getElementById('categoryList');
-      const defaultCats = ['Clothes - Men', 'Clothes - Women', 'Cosmetics - Skincare', 'Cosmetics - Makeup', 'Groceries'];
-      const catsToShow = data.categories.length > 0 ? data.categories : defaultCats.map(name => ({name, icon: categoryIcons[name]||'✨'}));
-
-      list.innerHTML = catsToShow.map(c => `
-        <a href="/category.html?cat=${encodeURIComponent(c.name)}" class="cat-item">
-          <div class="cat-icon">${c.icon.startsWith('http') ? `<img src="${c.icon}">` : c.icon}</div>
-          <div class="cat-name">${c.name.split(' - ')[0]}</div>
-        </a>
-      `).join('');
-    } catch (err) { console.error(err); }
+  function loadCategories() {
+    const list = document.getElementById('categoryList');
+    // Render the beautiful image cards
+    list.innerHTML = mainCategories.map(c => `
+      <a href="/category.html?cat=${encodeURIComponent(c.name)}" class="cat-card">
+        <img src="${c.image}" alt="${c.name}">
+        <div class="overlay"></div>
+        <h3>${c.name}</h3>
+      </a>
+    `).join('');
   }
 
   async function loadProducts(searchTerm = '') {
@@ -181,17 +172,14 @@
       }
 
       const grid = document.getElementById('productGrid');
-      if (allProducts.length === 0) { 
-        grid.innerHTML = '<p>No products found.</p>'; 
-        return; 
-      }
+      if (allProducts.length === 0) { grid.innerHTML = '<p>No products found.</p>'; return; }
       
       grid.innerHTML = allProducts.map(p => {
         return `
         <a href="/product.html?id=${p._id}" class="card">
-          ${p.imageUrl ? `<img src="${p.imageUrl}" class="card-img" alt="${p.name}">` : `<div class="card-emoji">${categoryIcons[p.category] || '✨'}</div>`}
+          ${p.imageUrl ? `<img src="${p.imageUrl}" class="card-img" alt="${p.name}">` : `<div class="card-emoji">✨</div>`}
           <h3>${p.name}</h3>
-          <div class="brand">${p.brand || 'Premium'}</div>
+          <div class="brand">${p.category}</div>
           <div class="priceRow">
             <span class="price">₹${p.price}</span>
             <button class="addBtn" onclick="event.preventDefault(); addToCart('${p._id}', '${p.name}', ${p.price}, ${p.stock})" ${p.stock === 0 ? 'disabled' : ''}>${p.stock === 0 ? 'Sold Out' : 'Add'}</button>
