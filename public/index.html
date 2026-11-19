@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>AJ | Luxury Store</title>
+<!-- CHANGED THE TITLE HERE -->
+<title>AJ | Store</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #e8e2d9; font-family: 'Lato', sans-serif; padding-bottom: 20px; color: #333; }
+  body { background: #e8e2d9; font-family: 'Lato', sans-serif; padding-bottom: 20px; color: #333; scroll-behavior: smooth; }
   
   header { background: #111; padding: 16px 20px; position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
   .logo { font-family: 'Playfair Display', serif; color: #d4af37; font-size: 24px; font-weight: 600; letter-spacing: 2px; text-decoration: none; }
@@ -17,7 +18,7 @@
   .hero { background: #e8e2d9; padding: 60px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 320px; }
   .hero h1 { font-family: 'Playfair Display', serif; font-size: 34px; color: #111; margin-bottom: 12px; letter-spacing: 1px; }
   .hero p { font-size: 14px; color: #555; margin-bottom: 24px; max-width: 300px; line-height: 1.5; }
-  .hero-btn { background: #111; color: #d4af37; padding: 14px 36px; text-decoration: none; font-size: 13px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; border: 1px solid #111; transition: 0.3s; }
+  .hero-btn { background: #111; color: #d4af37; padding: 14px 36px; text-decoration: none; font-size: 13px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; border: 1px solid #111; transition: 0.3s; cursor: pointer; }
   .hero-btn:hover { background: #d4af37; color: #111; }
 
   .search-wrap { padding: 20px; }
@@ -45,7 +46,6 @@
   .price { font-size: 16px; font-weight: bold; color: #111; }
   .addBtn { background: #111; color: #d4af37; border: none; padding: 6px 14px; font-size: 11px; font-weight: bold; text-transform: uppercase; cursor: pointer; border-radius: 4px; }
   
-  /* Side Menu */
   #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 99; display: none; }
   #sideMenu { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: #111; z-index: 100; transition: 0.3s ease-in-out; display: flex; flex-direction: column; }
   #sideMenu.open { left: 0; }
@@ -82,7 +82,8 @@
 <div class="hero">
   <h1>Premium Collections</h1>
   <p>Discover our exclusive range of fashion, beauty, and gourmet essentials.</p>
-  <a href="#shop" class="hero-btn">Shop Now</a>
+  <!-- ADDED A JAVASCRIPT SCROLL FUNCTION -->
+  <button onclick="document.getElementById('categoriesWrap').scrollIntoView({behavior: 'smooth'});" class="hero-btn">Shop Now</button>
 </div>
 
 <div class="search-wrap">
@@ -91,6 +92,7 @@
   </div>
 </div>
 
+<!-- THIS IS THE TARGET FOR THE SCROLL -->
 <div class="categories-wrap" id="categoriesWrap">
   <div class="section-title">Shop by Department</div>
   <div class="cat-grid" id="categoryList"></div>
