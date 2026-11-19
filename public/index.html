@@ -7,13 +7,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  /* FIXED: Entire body is now the cream color */
-  body { background: #e8e2d9; font-family: 'Lato', sans-serif; padding-bottom: 80px; color: #333; }
+  body { background: #e8e2d9; font-family: 'Lato', sans-serif; padding-bottom: 20px; color: #333; }
   
   header { background: #111; padding: 16px 20px; position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
   .logo { font-family: 'Playfair Display', serif; color: #d4af37; font-size: 24px; font-weight: 600; letter-spacing: 2px; text-decoration: none; }
   .nav-icons { display: flex; align-items: center; gap: 16px; color: #fff; font-size: 20px; cursor: pointer; text-decoration: none; }
-  #headerCartCount { font-size: 14px; font-weight: bold; color: #d4af37; margin-left: 4px; }
+  #headerCartCount { font-size: 14px; font-weight: bold; color: #d4af37; margin-left: 4px; background: rgba(212, 175, 55, 0.2); padding: 2px 8px; border-radius: 12px; }
   
   .hero { background: #e8e2d9; padding: 60px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 320px; }
   .hero h1 { font-family: 'Playfair Display', serif; font-size: 34px; color: #111; margin-bottom: 12px; letter-spacing: 1px; }
@@ -46,17 +45,37 @@
   .price { font-size: 16px; font-weight: bold; color: #111; }
   .addBtn { background: #111; color: #d4af37; border: none; padding: 6px 14px; font-size: 11px; font-weight: bold; text-transform: uppercase; cursor: pointer; border-radius: 4px; }
   
-  #cart { position: fixed; bottom: 0; left: 0; right: 0; background: #111; color: #d4af37; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 20; font-weight: bold; letter-spacing: 1px; }
-  #cart.hidden { display: none; }
-  #cart a { color: #d4af37; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+  /* Side Menu */
+  #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 99; display: none; }
+  #sideMenu { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: #111; z-index: 100; transition: 0.3s ease-in-out; display: flex; flex-direction: column; }
+  #sideMenu.open { left: 0; }
+  .side-header { padding: 40px 20px 20px; border-bottom: 1px solid #333; }
+  .side-header h2 { font-family: 'Playfair Display', serif; color: #d4af37; font-size: 22px; margin-bottom: 4px; }
+  .side-header p { color: #888; font-size: 13px; }
+  .side-links { flex: 1; padding: 20px 0; }
+  .side-links a { display: flex; align-items: center; gap: 12px; padding: 16px 20px; text-decoration: none; color: #ddd; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid #222; }
+  .side-links a:hover { background: #222; color: #d4af37; }
 </style>
 </head>
 <body>
 
+<div id="overlay" onclick="toggleMenu()"></div>
+<div id="sideMenu">
+  <div class="side-header">
+    <h2 id="menuName">Welcome</h2>
+    <p id="menuPhone">Guest User</p>
+  </div>
+  <div class="side-links">
+    <a href="/orders.html"><span>📦</span> My Orders</a>
+    <a href="/profile.html"><span>👤</span> My Profile</a>
+    <a href="/help.html"><span>🎧</span> Concierge</a>
+    <a href="/"><span>🏠</span> Home</a>
+  </div>
+</div>
+
 <header>
   <div class="nav-icons" onclick="toggleMenu()">☰</div>
   <a href="/" class="logo">AJ</a>
-  <!-- Clickable Cart Icon -->
   <a href="/cart.html" class="nav-icons">🛒 <span id="headerCartCount"></span></a>
 </header>
 
@@ -82,15 +101,9 @@
   <div class="grid" id="productGrid"><p>Loading collections...</p></div>
 </div>
 
-<div id="cart" class="hidden">
-  <span id="cartInfo">0 items • ₹0</span>
-  <a href="/cart.html">View Bag →</a>
-</div>
-
 <script>
   const API = '/api';
   
-  // Main Categories with elegant images
   const mainCategories = [
     { name: 'Clothes', image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=600&auto=format&fit=crop' },
     { name: 'Cosmetics', image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600&auto=format&fit=crop' },
@@ -99,6 +112,19 @@
 
   function getCart() { return JSON.parse(localStorage.getItem('cart') || '{}'); }
   function saveCart(cart) { localStorage.setItem('cart', JSON.stringify(cart)); }
+
+  function toggleMenu() {
+    const menu = document.getElementById('sideMenu');
+    const overlay = document.getElementById('overlay');
+    if (menu.classList.contains('open')) { menu.classList.remove('open'); overlay.style.display = 'none'; }
+    else { menu.classList.add('open'); overlay.style.display = 'block'; }
+  }
+
+  const savedDetails = JSON.parse(localStorage.getItem('customerDetails') || 'null');
+  if (savedDetails && savedDetails.name) {
+    document.getElementById('menuName').textContent = `Hello, ${savedDetails.name}`;
+    document.getElementById('menuPhone').textContent = savedDetails.phone;
+  }
 
   function loadCategories() {
     const list = document.getElementById('categoryList');
@@ -134,7 +160,8 @@
       grid.innerHTML = allProducts.map(p => {
         return `
         <a href="/product.html?id=${p._id}" class="card">
-          ${p.imageUrl ? `<img src="${p.imageUrl}" class="card-img" alt="${p.name}">` : `<div class="card-emoji">✨</div>`}
+          ${p.imageUrl ? `<img src="${p.imageUrl}" class="card-img" alt="${p.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : ''}
+          <div class="card-emoji" style="${p.imageUrl ? 'display:none;' : ''}">✨</div>
           <h3>${p.name}</h3>
           <div class="brand">${p.category}</div>
           <div class="priceRow">
@@ -157,16 +184,7 @@
 
   function updateCartBadge() {
     const cart = getCart();
-    const items = Object.values(cart).filter(i => i.quantity > 0);
-    const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
-    const count = items.reduce((s, i) => s + i.quantity, 0);
-    
-    // Update Bottom Bar
-    const cartEl = document.getElementById('cart');
-    if (count === 0) cartEl.classList.add('hidden');
-    else { cartEl.classList.remove('hidden'); document.getElementById('cartInfo').textContent = `${count} items • ₹${total}`; }
-    
-    // Update Top Header Icon
+    const count = Object.values(cart).reduce((s, i) => s + i.quantity, 0);
     document.getElementById('headerCartCount').textContent = count > 0 ? count : '';
   }
 

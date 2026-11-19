@@ -7,32 +7,30 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #f6f3eb; font-family: 'Lato', sans-serif; padding-bottom: 80px; }
+  body { background: #e8e2d9; font-family: 'Lato', sans-serif; padding-bottom: 20px; }
   
-  header { background: #111; padding: 16px 20px; position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 16px; }
+  header { background: #111; padding: 16px 20px; position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
   .back-btn { color: #d4af37; text-decoration: none; font-size: 20px; }
   h1 { font-family: 'Playfair Display', serif; color: #d4af37; font-size: 20px; letter-spacing: 1px; text-transform: uppercase; }
+  .cart-icon { color: #d4af37; text-decoration: none; font-size: 20px; }
   
-  /* Sub-category Filters */
-  .filters-wrap { padding: 16px 20px; background: #fff; border-bottom: 1px solid #eee; position: sticky; top: 56px; z-index: 9; }
-  .filters-scroll { display: flex; gap: 12px; overflow-x: auto; scrollbar-width: none; }
+  /* Filter Buttons */
+  .filters-wrap { padding: 16px 20px; background: #fff; border-bottom: 1px solid #ddd; position: sticky; top: 56px; z-index: 9; }
+  .filters-scroll { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; }
   .filters-scroll::-webkit-scrollbar { display: none; }
-  .filter-btn { background: #f6f3eb; border: 1px solid #ddd; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; color: #555; text-transform: uppercase; cursor: pointer; white-space: nowrap; transition: 0.3s; }
+  .filter-btn { background: #fff; border: 1px solid #ccc; padding: 8px 16px; border-radius: 30px; font-size: 12px; font-weight: 700; color: #555; text-transform: uppercase; cursor: pointer; white-space: nowrap; transition: 0.3s; }
   .filter-btn.active { background: #111; color: #d4af37; border-color: #111; }
 
+  /* Product Grid */
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; padding: 20px; }
   .card { background: #fff; padding: 12px; text-decoration: none; color: inherit; display: flex; flex-direction: column; border: 1px solid #eee; border-radius: 8px; }
-  .card-img { width: 100%; height: 180px; object-fit: cover; margin-bottom: 12px; border-radius: 4px; }
+  .card-img { width: 100%; height: 180px; object-fit: cover; margin-bottom: 12px; border-radius: 4px; background: #f9f9f9; }
   .card-emoji { font-size: 50px; text-align: center; height: 180px; display: flex; align-items: center; justify-content: center; background: #f9f9f9; border-radius: 4px; }
   .card h3 { font-family: 'Playfair Display', serif; font-size: 16px; margin-bottom: 4px; }
   .brand { font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 8px; }
   .priceRow { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
   .price { font-size: 16px; font-weight: bold; }
   .addBtn { background: #111; color: #d4af37; border: none; padding: 6px 14px; font-size: 11px; font-weight: bold; text-transform: uppercase; border-radius: 4px; cursor: pointer; }
-  
-  #cart { position: fixed; bottom: 0; left: 0; right: 0; background: #111; color: #d4af37; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 20; }
-  #cart.hidden { display: none; }
-  #cart a { color: #d4af37; text-decoration: none; font-weight: bold; }
 </style>
 </head>
 <body>
@@ -40,30 +38,24 @@
 <header>
   <a href="/" class="back-btn">←</a>
   <h1 id="pageTitle">Collection</h1>
+  <a href="/cart.html" class="cart-icon">🛒</a>
 </header>
 
-<!-- Dynamic Sub-category Filters -->
+<!-- Dynamic Filters -->
 <div class="filters-wrap" id="filtersWrap">
-  <div class="filters-scroll" id="filterList">
-    <!-- Buttons will go here -->
-  </div>
+  <div class="filters-scroll" id="filterList"></div>
 </div>
 
 <div class="grid" id="productGrid"></div>
 
-<div id="cart" class="hidden">
-  <span id="cartInfo">0 items • ₹0</span>
-  <a href="/cart.html">View Bag →</a>
-</div>
-
 <script>
   const API = '/api';
   const urlParams = new URLSearchParams(window.location.search);
-  const mainCategory = urlParams.get('cat') || 'All';
+  const mainCategory = urlParams.get('cat') || 'Groceries'; 
   
   document.getElementById('pageTitle').textContent = mainCategory;
 
-  let allCategoryProducts = []; // Store all products for this main category
+  let allCategoryProducts = []; 
   let currentFilter = 'All';
 
   function getCart() { return JSON.parse(localStorage.getItem('cart') || '{}'); }
@@ -74,46 +66,43 @@
       const res = await fetch(`${API}/products`);
       const data = await res.json();
       
-      // 1. Filter products that belong to the Main Category (e.g., 'Clothes')
+      // Find products that belong to this department (e.g. "Groceries - Fruits")
       allCategoryProducts = data.products.filter(p => 
-        p.category.toLowerCase().includes(mainCategory.toLowerCase())
+        p.category.toLowerCase().includes(mainCategory.toLowerCase()) || mainCategory === 'All'
       );
       
-      // 2. Extract all unique subcategories from the products (e.g., 'Clothes - Men', 'Clothes - Women')
-      const subcategories = ['All', ...new Set(allCategoryProducts.map(p => p.category))];
+      // Extract subcategories (e.g. "Fruits", "Dairy")
+      let subcategories = ['All', ...new Set(allCategoryProducts.map(p => p.category.split(' - ').pop()))];
       
-      // 3. Render the filter buttons
+      // Render filters
       const filterList = document.getElementById('filterList');
-      if (subcategories.length > 2) { // Only show filters if there are multiple subcategories
+      if (subcategories.length > 1) { 
         filterList.innerHTML = subcategories.map(sub => `
-          <button class="filter-btn ${sub === currentFilter ? 'active' : ''}" onclick="applyFilter('${sub}')">
-            ${sub.split(' - ')[1] || sub} 
+          <button class="filter-btn ${sub === currentFilter ? 'active' : ''}" onclick="applyFilter('${sub}', event)">
+            ${sub} 
           </button>
         `).join('');
       } else {
-        document.getElementById('filtersWrap').style.display = 'none'; // Hide if only 1 category
+        document.getElementById('filtersWrap').style.display = 'none';
       }
 
       renderGrid();
     } catch (err) { console.error(err); }
   }
 
-  function applyFilter(subCategoryName) {
+  function applyFilter(subCategoryName, event) {
     currentFilter = subCategoryName;
-    // Update button styles
     document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
-    
     renderGrid();
   }
 
   function renderGrid() {
     const grid = document.getElementById('productGrid');
     
-    // Filter based on the selected button
     const displayItems = currentFilter === 'All' 
       ? allCategoryProducts 
-      : allCategoryProducts.filter(p => p.category === currentFilter);
+      : allCategoryProducts.filter(p => p.category.endsWith(currentFilter));
 
     if (displayItems.length === 0) { 
       grid.innerHTML = '<p style="padding:20px; width:100%; text-align:center;">No items found.</p>'; 
@@ -124,7 +113,8 @@
 
     grid.innerHTML = displayItems.map(p => `
       <a href="/product.html?id=${p._id}" class="card">
-        ${p.imageUrl ? `<img src="${p.imageUrl}" class="card-img" alt="${p.name}">` : `<div class="card-emoji">✨</div>`}
+        ${p.imageUrl ? `<img src="${p.imageUrl}" class="card-img" alt="${p.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : ''}
+        <div class="card-emoji" style="${p.imageUrl ? 'display:none;' : ''}">✨</div>
         <h3>${p.name}</h3>
         <div class="brand">${p.category}</div>
         <div class="priceRow">
@@ -141,20 +131,9 @@
     if (cart[id].quantity >= stock) return alert(`Only ${stock} remaining`);
     cart[id].quantity += 1;
     saveCart(cart);
-    updateCartBadge();
   }
 
-  function updateCartBadge() {
-    const cart = getCart();
-    const items = Object.values(cart).filter(i => i.quantity > 0);
-    const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
-    const count = items.reduce((s, i) => s + i.quantity, 0);
-    const cartEl = document.getElementById('cart');
-    if (count === 0) cartEl.classList.add('hidden');
-    else { cartEl.classList.remove('hidden'); document.getElementById('cartInfo').textContent = `${count} items • ₹${total}`; }
-  }
-
-  updateCartBadge(); loadProducts();
+  loadProducts();
 </script>
 </body>
 </html>
