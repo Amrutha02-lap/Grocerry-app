@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<!-- CHANGED THE TITLE HERE -->
 <title>AJ | Store</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
@@ -46,6 +45,7 @@
   .price { font-size: 16px; font-weight: bold; color: #111; }
   .addBtn { background: #111; color: #d4af37; border: none; padding: 6px 14px; font-size: 11px; font-weight: bold; text-transform: uppercase; cursor: pointer; border-radius: 4px; }
   
+  /* Side Menu */
   #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 99; display: none; }
   #sideMenu { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: #111; z-index: 100; transition: 0.3s ease-in-out; display: flex; flex-direction: column; }
   #sideMenu.open { left: 0; }
@@ -82,7 +82,6 @@
 <div class="hero">
   <h1>Premium Collections</h1>
   <p>Discover our exclusive range of fashion, beauty, and gourmet essentials.</p>
-  <!-- ADDED A JAVASCRIPT SCROLL FUNCTION -->
   <button onclick="document.getElementById('categoriesWrap').scrollIntoView({behavior: 'smooth'});" class="hero-btn">Shop Now</button>
 </div>
 
@@ -92,7 +91,6 @@
   </div>
 </div>
 
-<!-- THIS IS THE TARGET FOR THE SCROLL -->
 <div class="categories-wrap" id="categoriesWrap">
   <div class="section-title">Shop by Department</div>
   <div class="cat-grid" id="categoryList"></div>
@@ -106,11 +104,12 @@
 <script>
   const API = '/api';
   
-  const mainCategories = [
-    { name: 'Clothes', image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=600&auto=format&fit=crop' },
-    { name: 'Cosmetics', image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600&auto=format&fit=crop' },
-    { name: 'Groceries', image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=600&auto=format&fit=crop' }
-  ];
+  // Fallback images for the Department Cards
+  const fallbackImages = {
+    'Clothes': 'https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=600&auto=format&fit=crop',
+    'Cosmetics': 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600&auto=format&fit=crop',
+    'Groceries': 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=600&auto=format&fit=crop'
+  };
 
   function getCart() { return JSON.parse(localStorage.getItem('cart') || '{}'); }
   function saveCart(cart) { localStorage.setItem('cart', JSON.stringify(cart)); }
@@ -128,15 +127,34 @@
     document.getElementById('menuPhone').textContent = savedDetails.phone;
   }
 
-  function loadCategories() {
-    const list = document.getElementById('categoryList');
-    list.innerHTML = mainCategories.map(c => `
-      <a href="/category.html?cat=${encodeURIComponent(c.name)}" class="cat-card">
-        <img src="${c.image}" alt="${c.name}">
-        <div class="overlay"></div>
-        <h3>${c.name}</h3>
-      </a>
-    `).join('');
+  async function loadCategories() {
+    try {
+      const res = await fetch(`${API}/categories`);
+      const data = await res.json();
+      const list = document.getElementById('categoryList');
+      
+      // Get unique Main Departments from the DB (e.g., turns "Clothes - Men" into just "Clothes")
+      let mainDepts = [];
+      data.categories.forEach(c => {
+        let mainName = c.name.split(' - ')[0]; // Splits string by dash
+        if (!mainDepts.includes(mainName)) mainDepts.push(mainName);
+      });
+
+      // If no categories exist in DB, use default ones
+      if (mainDepts.length === 0) mainDepts = ['Clothes', 'Cosmetics', 'Groceries'];
+
+      // Render the cards
+      list.innerHTML = mainDepts.map(name => {
+        const img = fallbackImages[name] || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=600&auto=format&fit=crop';
+        return `
+          <a href="/category.html?cat=${encodeURIComponent(name)}" class="cat-card">
+            <img src="${img}" alt="${name}">
+            <div class="overlay"></div>
+            <h3>${name}</h3>
+          </a>
+        `;
+      }).join('');
+    } catch (err) { console.error(err); }
   }
 
   async function loadProducts(searchTerm = '') {
